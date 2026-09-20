@@ -1,0 +1,102 @@
+generated: '2026-09-19'
+method: probed
+source: 'POST https://movehome.org/api/a2a — observed response headers x-ratelimit-limit 60, x-ratelimit-remaining 59, x-ratelimit-reset 1789865040 (2026-09-19)'
+docs:
+- https://movehome.org/skills.md
+- https://github.com/MoveHome/MoveHome.Org/blob/main/docs/raia-portal-feed-api.md#10-rate-limits
+- https://github.com/MoveHome/MoveHome.Org/blob/main/docs/raia-a2a-api.md#5-errors-json-rpc
+- https://github.com/MoveHome/MoveHome.Org/blob/main/src/lib/portal/rate-limit.ts
+limit_count: 9
+summary: >-
+  One Postgres-backed fixed-minute-window limiter (src/lib/portal/rate-limit.ts) serves every surface,
+  keyed by (client, endpoint group, UTC minute), default 60 per minute, with per-route overrides. Anonymous
+  surfaces are keyed by a hash of the client IP; the Portal Feed API by OAuth2 client_id. The signal is
+  X-RateLimit-Limit / X-RateLimit-Remaining / X-RateLimit-Reset on every response (observed live on the A2A
+  endpoint) and Retry-After on 429. Exhaustion is HTTP 429 with a problem+json body (type
+  https://movehome.org/errors/rate-limit) on REST, JSON-RPC -32000 on the MCP servers, and -32603 on A2A
+  per the integrator guide. The limiter fails OPEN: if its store is unavailable the request is allowed.
+headers:
+  limit: X-RateLimit-Limit
+  remaining: X-RateLimit-Remaining
+  reset: X-RateLimit-Reset (unix seconds, start of the next UTC minute)
+  retry_after: Retry-After (seconds, on 429 only)
+  status_on_exhaustion: 429
+rate_limits:
+- name: A2A JSON-RPC (all skills)
+  scope: per-IP
+  limit: 60
+  window: 1 minute (fixed UTC minute)
+  burst: null
+  applies_to: ['POST https://movehome.org/api/a2a — search_properties, get_property, create_enquiry']
+  headers: [X-RateLimit-Limit, X-RateLimit-Remaining, X-RateLimit-Reset]
+  observed: 'x-ratelimit-limit: 60 / x-ratelimit-remaining: 59 on a live message/send'
+  exhaustion: HTTP 429; docs say the body is a JSON-RPC error -32603 with Retry-After
+  source: observed + skills.md "~60 requests/min per IP across all skills"
+- name: A2A create_enquiry (write)
+  scope: per-IP
+  limit: 5
+  window: 1 minute
+  applies_to: [create_enquiry]
+  additional_controls:
+  - duplicate suppression — same enquirer email + listing within ~10 minutes is dropped
+  - per-email hourly cap (number not published)
+  source: skills.md "Rate limits" — "create_enquiry is additionally capped (≈5/min per IP) with duplicate suppression (same email+listing within ~10 min) and a per-email hourly cap"
+- name: Website enquiry form
+  scope: per-IP
+  limit: 5
+  window: 1 minute
+  applies_to: ['POST https://movehome.org/api/enquire']
+  source: src/app/api/enquire/route.ts ENQUIRY_PER_MIN = 5, group enquiry.write
+- name: MCP property server
+  scope: per-IP
+  limit: 60
+  window: 1 minute
+  applies_to: ['POST https://movehome.org/mcp (and /api/mcp) — initialize, tools/list, tools/call']
+  exhaustion: HTTP 429 with JSON-RPC error -32000 "Rate limit exceeded."
+  source: src/app/api/mcp/route.ts rateLimitGroup a2a; src/lib/mcp/http.ts
+- name: MCP registry server
+  scope: per-IP
+  limit: 60
+  window: 1 minute
+  applies_to: ['POST https://movehome.org/api/registry/mcp']
+  exhaustion: HTTP 429 with JSON-RPC error -32000
+  source: src/app/api/registry/mcp/route.ts rateLimitGroup registry.read
+- name: Registry REST reads
+  scope: per-IP
+  limit: 60
+  window: 1 minute
+  applies_to: ['GET /api/registry/v1/agents', 'GET /api/registry/v1/agents/{idOrSlug}', 'GET /api/registry/v1/all', 'GET /api/registry/v1/stats']
+  source: registry route handlers, group registry.read (default 60)
+- name: Registry register
+  scope: per-IP
+  limit: 10
+  window: 1 minute
+  applies_to: ['POST /api/registry/v1/agents/register']
+  exhaustion: HTTP 429 problem+json with Retry-After, X-RateLimit-*
+  source: src/app/api/registry/v1/agents/register/route.ts REGISTER_PER_MIN = 10
+- name: Registry flag (and re-sync)
+  scope: per-IP
+  limit: 5
+  window: 1 minute
+  applies_to: ['POST /api/registry/v1/agents/{idOrSlug}/flag (5/min)', 'PUT /api/registry/v1/agents/{idOrSlug} (default 60/min, group registry.write)']
+  source: flag route FLAG_PER_MIN = 5; detail route enforceRateLimit(..., 'registry.write')
+- name: RAIA Portal Feed API
+  scope: per-credential per endpoint group
+  limit: 60
+  window: 1 minute
+  endpoint_groups: [listings.write, listings.read, branches.read, products.read, products.write, health]
+  applies_to: [upsertListing, getListing, deleteListing, listBranchListings, getBranchPerformance, listBranchEnquiries, listPremiumListingActivations, requestPremiumListingActivation, getPremiumListingActivation, listFeaturedPropertyActivations, requestFeaturedPropertyActivation, getFeaturedPropertyActivation]
+  headers: [X-RateLimit-Limit, X-RateLimit-Remaining, X-RateLimit-Reset, Retry-After]
+  exhaustion: HTTP 429 application/problem+json type https://movehome.org/errors/rate-limit
+  source: docs §10 "60 requests/min per credential per endpoint group"; OpenAPI TooManyRequests response on every gated operation
+  token_endpoint:
+    limit: 10
+    window: 1 minute
+    applies_to: ['POST https://movehome.org/oauth/token']
+    source: docs §3 "the token endpoint is limited to 10 req/min"; rate-limit.ts GROUP_OVERRIDES token 10
+size_and_time_limits:
+- {name: Portal Feed request body, limit: 1 MB, applies_to: upsertListing, source: 'docs §5 "Max body 1 MB"'}
+- {name: Access token lifetime, limit: 3600 seconds, applies_to: 'POST /oauth/token', source: 'docs §3 "Tokens last 1 hour"; TOKEN_TTL_SECONDS = 3600'}
+- {name: Branch performance window, limit: 28 days, applies_to: getBranchPerformance, source: 'docs §7 "window ≤ 28 days"'}
+- {name: Search page size, limit: 50, applies_to: 'search_properties limit (A2A and MCP), registry limit', source: skills.md; MCP inputSchema maximum 50}
+- {name: A2A skill name length, limit: 64 chars, applies_to: message/send DataPart skill, source: src/lib/a2a/executor.ts}

@@ -1,0 +1,198 @@
+generated: '2026-09-19'
+method: generated
+source: openapi/movehome-org-raia-portal-feed-openapi.yaml
+description: Recommended x-agentic-access execution contracts, classified heuristically from
+  the OpenAPI. A governance starting point for exposing this API to AI agents — review and bind
+  audience per deployment. See research/curity/agentic-governance/.
+summary:
+  operations: 13
+  by_action_class:
+    connected: 9
+    acting: 4
+  by_consequence:
+    read: 9
+    write: 4
+  human_in_the_loop_required: 0
+operations:
+- path: /healthz
+  method: get
+  operationId: getHealth
+  x-agentic-access:
+    action-class: connected
+    consequence: read
+    subject: optional
+    token:
+      max-ttl: 3600
+    audit: none
+    scope:
+    - feed.read
+    - feed.write
+    - products.write
+- path: /listings/{reference}
+  method: put
+  operationId: upsertListing
+  x-agentic-access:
+    action-class: acting
+    consequence: write
+    subject: required
+    scope:
+    - feed.write
+    audience: null
+    token:
+      max-ttl: 900
+    escalation:
+      human-in-the-loop: conditional
+      triggers:
+      - abnormal
+      - high-value
+    audit: required
+- path: /listings/{reference}
+  method: get
+  operationId: getListing
+  x-agentic-access:
+    action-class: connected
+    consequence: read
+    subject: optional
+    scope:
+    - feed.read
+    token:
+      max-ttl: 3600
+    audit: none
+- path: /listings/{reference}
+  method: delete
+  operationId: deleteListing
+  x-agentic-access:
+    action-class: acting
+    consequence: write
+    subject: required
+    scope:
+    - feed.write
+    audience: null
+    token:
+      max-ttl: 900
+    escalation:
+      human-in-the-loop: conditional
+      triggers:
+      - abnormal
+      - high-value
+    audit: required
+- path: /branches/{branch_id}/listings
+  method: get
+  operationId: listBranchListings
+  x-agentic-access:
+    action-class: connected
+    consequence: read
+    subject: optional
+    scope:
+    - feed.read
+    token:
+      max-ttl: 3600
+    audit: none
+- path: /branches/{branch_id}/performance
+  method: get
+  operationId: getBranchPerformance
+  x-agentic-access:
+    action-class: connected
+    consequence: read
+    subject: optional
+    scope:
+    - feed.read
+    token:
+      max-ttl: 3600
+    audit: none
+- path: /branches/{branch_id}/enquiries
+  method: get
+  operationId: listBranchEnquiries
+  x-agentic-access:
+    action-class: connected
+    consequence: read
+    subject: optional
+    scope:
+    - feed.read
+    token:
+      max-ttl: 3600
+    audit: none
+- path: /products/premium-listings
+  method: get
+  operationId: listPremiumListingActivations
+  x-agentic-access:
+    action-class: connected
+    consequence: read
+    subject: optional
+    scope:
+    - feed.read
+    token:
+      max-ttl: 3600
+    audit: none
+- path: /products/premium-listings
+  method: post
+  operationId: requestPremiumListingActivation
+  x-agentic-access:
+    action-class: acting
+    consequence: write
+    subject: required
+    scope:
+    - products.write
+    audience: null
+    token:
+      max-ttl: 900
+    escalation:
+      human-in-the-loop: conditional
+      triggers:
+      - abnormal
+      - high-value
+    audit: required
+- path: /products/premium-listings/{activation_id}
+  method: get
+  operationId: getPremiumListingActivation
+  x-agentic-access:
+    action-class: connected
+    consequence: read
+    subject: optional
+    scope:
+    - feed.read
+    token:
+      max-ttl: 3600
+    audit: none
+- path: /products/featured-properties
+  method: get
+  operationId: listFeaturedPropertyActivations
+  x-agentic-access:
+    action-class: connected
+    consequence: read
+    subject: optional
+    scope:
+    - feed.read
+    token:
+      max-ttl: 3600
+    audit: none
+- path: /products/featured-properties
+  method: post
+  operationId: requestFeaturedPropertyActivation
+  x-agentic-access:
+    action-class: acting
+    consequence: write
+    subject: required
+    scope:
+    - products.write
+    audience: null
+    token:
+      max-ttl: 900
+    escalation:
+      human-in-the-loop: conditional
+      triggers:
+      - abnormal
+      - high-value
+    audit: required
+- path: /products/featured-properties/{activation_id}
+  method: get
+  operationId: getFeaturedPropertyActivation
+  x-agentic-access:
+    action-class: connected
+    consequence: read
+    subject: optional
+    scope:
+    - feed.read
+    token:
+      max-ttl: 3600
+    audit: none

@@ -1,0 +1,111 @@
+generated: '2026-09-19'
+method: searched
+source: https://movehome.org/.well-known/agent-card.json
+derived_from: openapi/movehome-org-raia-portal-feed-openapi.yaml
+docs:
+- https://movehome.org/skills.md
+- https://github.com/MoveHome/MoveHome.Org/blob/main/docs/raia-a2a-api.md
+- https://github.com/MoveHome/MoveHome.Org/blob/main/docs/raia-portal-feed-api.md
+- https://github.com/estateaigents/raia-protocol/blob/master/SPEC.md
+summary: >-
+  MoveHome's conformance profile is the agent-protocol stack plus one vertical domain standard. Agent
+  layer: an A2A 0.3.0 agent card graded conformant, two MCP servers at protocol version 2025-06-18,
+  JSON-RPC 2.0 on all three. Domain layer: the RAIA Protocol (Real Estate AI Agent Protocol, v0.2
+  implementer release, MIT, governed per its charter by this same CIC, Co. 17202438) — declared in the
+  contract itself through raia_id identifiers, the RAIA listing/enquiry JSON Schemas the surfaces emit, and
+  the RAIA Portal Feed API OpenAPI that the OAuth2-gated inbound API implements. Cross-cutting: RFC 9457/7807
+  problem details observed live on every REST 4xx, OAuth 2.0 client credentials with three scopes on the
+  Portal Feed API, UN/LOCODE (UNECE Rec. 16) as the location vocabulary. It declares no OIDC, publishes no
+  RFC 8414/9728 discovery, no RFC 9116 security.txt, no RFC 9727 API catalog, no RFC 8594 Sunset signalling
+  and no certification or compliance programme, so no Compliance pointer is emitted.
+standards:
+- id: a2a
+  name: Agent2Agent protocol
+  version: '0.3.0'
+  conforms: true
+  evidence: a2a/movehome-org-agent-card.json — protocolVersion "0.3.0", url https://movehome.org/api/a2a, preferredTransport JSONRPC, capabilities object, skills[] of 3; POST message/send answered with a completed Task carrying a search_results artifact; tasks/get answered -32001 Task not found; message/stream answered -32004. Graded conformant in a2a/movehome-org-a2a.yml.
+- id: mcp
+  name: Model Context Protocol
+  version: '2025-06-18'
+  conforms: true
+  evidence: 'POST https://movehome.org/mcp and https://movehome.org/api/registry/mcp initialize returned protocolVersion "2025-06-18", serverInfo {movehome-property 1.0.0} / {movehome-a2a-registry 1.0.0}, capabilities.tools.listChanged false; tools/list returned 2 and 3 tools with inputSchema. See mcp/movehome-org-mcp.yml.'
+- id: json-rpc-2.0
+  conforms: true
+  evidence: 'All three JSON-RPC surfaces answer {"jsonrpc":"2.0", ...}; observed -32004, -32602, -32001 on /api/a2a and the source uses -32700/-32600/-32602/-32000 on the MCP servers.'
+- id: raia-protocol
+  name: RAIA Protocol (Real Estate Artificial Intelligence Agent Protocol)
+  version: '0.2 implementer release (May 2026); this site states "Implements RAIA Protocol v0.1" in its README'
+  conforms: true
+  domain_standard_signature: true
+  evidence: >-
+    Contract-level declarations, not prose: (1) openapi/movehome-org-raia-portal-feed-openapi.yaml info.title
+    "RAIA Portal Feed API", implemented live at https://movehome.org/api/raia/portal/v1 (healthz 200
+    {"service":"raia-portal-feed-api","version":"0.1.0"}; 401s carry WWW-Authenticate Bearer
+    realm="raia-portal-feed"); (2) every listing the A2A skills and MCP tools return carries a raia_id in the
+    RAIA format prop-{jurisdiction}-{org-slug}-{sequence} (observed prop-gb-rlf-001141), validated by the
+    regex ^prop-[a-z]{2}-[a-z0-9-]{2,32}-[0-9]{4,}$ in src/lib/a2a/skills.ts; (3) the listing and enquiry
+    payloads conform to the RAIA JSON Schemas ($id https://estateaigents.org/schemas/listing.json and
+    enquiry.json) vendored in the provider's repository and saved under json-schema/; (4) the agent card
+    description says the catalogue is "federated via the open RAIA Protocol"; (5) MoveHome's About page asks
+    agencies to publish a RAIA agent card at /.well-known/raia-agent.json to be aggregated.
+  note: >-
+    RAIA is a young vertical standard (trademark UK00003359082; v1.0 certification is "planned", no
+    conformance test suite exists yet), sitting on A2A and MCP as transports. The RAIA Charter names "MoveHome
+    Foundation CIC · Co. 17202438" — the same company number as Move Home Organisation CIC — as the
+    protocol's governing body, and the specification repository is owned by the estateaigents GitHub
+    organisation; the commercial platform is the separate EstateAigents.com Ltd. Recorded as conforming on
+    the provider's own contract declarations; no third-party certification exists to cite.
+- id: rfc9457-problem-details
+  name: RFC 9457 / RFC 7807 Problem Details for HTTP APIs
+  conforms: true
+  evidence: >-
+    Observed live, unauthenticated: GET /api/registry/v1/agents/does-not-exist-xyz -> 404
+    application/problem+json {"type":"https://movehome.org/errors/not-found","title":"Not Found","status":404,
+    "detail":...,"trace_id":...,"timestamp":...}; POST /api/registry/v1/agents/register {} -> 400
+    application/problem+json type .../errors/validation with validation_errors[]; POST /oauth/token (no
+    credentials) -> 401 type .../errors/unauthorized with instance; GET /api/raia/portal/v1/listings/x -> 401
+    likewise. The OpenAPI's ProblemDetail schema (type, title, status, detail, instance, trace_id,
+    timestamp, validation_errors[]) is referenced by every 4xx/5xx response component. The provider's docs
+    cite RFC 7807; the shape is RFC 9457-compatible.
+- id: oauth2-client-credentials
+  name: OAuth 2.0 client credentials grant (RFC 6749 §4.4)
+  conforms: true
+  evidence: 'openapi securitySchemes.OAuth2ClientCredentials type oauth2, flows.clientCredentials with scopes feed.read, feed.write, products.write; live token endpoint https://movehome.org/oauth/token accepts HTTP Basic or form client_id/client_secret and returned 401 with WWW-Authenticate Bearer realm="raia-portal-feed" when neither was supplied. Tokens are HS256 JWTs with a 1-hour TTL (src/app/oauth/token/route.ts).'
+  note: The spec text recommends RS256 so clients can verify tokens against a JWKS; MoveHome's deployment uses HS256 because it is both issuer and verifier, and publishes an empty JWKS.
+- id: un-locode
+  name: UN/LOCODE (UNECE Recommendation 16)
+  conforms: true
+  evidence: 'search_properties (A2A skill and MCP tool) and search_agents take un_locode / location as a 5-character UN/LOCODE (e.g. GBLON); listing.location.un_locode is required by the RAIA listing schema and returned on every card.'
+- id: cors
+  name: Cross-origin resource sharing, open
+  conforms: true
+  evidence: 'OPTIONS /api/a2a -> 204 with access-control-allow-origin *; /mcp allows Content-Type, Mcp-Session-Id, Mcp-Protocol-Version, Authorization.'
+- id: a2a-agent-card-signature
+  name: A2A signed AgentCard (JWS over JCS canonical form)
+  conforms: false
+  evidence: 'The card carries no signatures[] and /.well-known/jwks.json is {"keys":[]}; skills.md describes the signature as optional and the signing code (ES256, kid, jku) exists in src/lib/a2a/card-signing.ts but is inactive.'
+- id: oidc
+  conforms: false
+  evidence: /.well-known/openid-configuration 404 on both hosts; the Portal Feed API is client-credentials only.
+- id: rfc8414-oauth-metadata
+  conforms: false
+  evidence: /.well-known/oauth-authorization-server 404 although the host issues OAuth2 tokens.
+- id: rfc9728-protected-resource
+  conforms: false
+  evidence: /.well-known/oauth-protected-resource 404 on the host that serves both MCP servers (both anonymous, so not strictly required).
+- id: rfc9116-security-txt
+  conforms: false
+  evidence: /.well-known/security.txt and /security.txt 404.
+- id: rfc9727-api-catalog
+  conforms: false
+  evidence: /.well-known/api-catalog 404.
+- id: apis-json
+  conforms: false
+  evidence: /apis.json, /apis.yml and /.well-known/apis.json 404.
+- id: rfc8594-sunset
+  conforms: false
+  evidence: No Sunset or Deprecation header in the OpenAPI or docs; no deprecation policy page.
+- id: rate-limit-headers
+  name: X-RateLimit-* + Retry-After
+  conforms: true
+  evidence: 'Observed on POST /api/a2a: x-ratelimit-limit 60, x-ratelimit-remaining 59, x-ratelimit-reset <unix>. Documented for the Portal Feed API with Retry-After on 429. Not the IETF draft RateLimit-Policy/RateLimit headers.'

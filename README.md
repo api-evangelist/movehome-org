@@ -64,5 +64,10 @@
 > Full detail: **[Where this data comes from](https://apievangelist.com/about/where-our-data-comes-from)**
 <!-- API-EVANGELIST-PROVENANCE:END -->
 
-Move Home Organisation CIC is a company surfaced via the API Evangelist harvest backlog (source: a2a-registry) and added to the network as a stub for full-pipeline profiling.
-- https://movehome.org/
+Move Home Organisation CIC (Companies House 17202438) is a UK Community Interest Company that runs [MoveHome.org](https://movehome.org/), a free, not-for-profit property listing aggregator and the open-source reference consumer of the RAIA Protocol. Its machine surface is agent-native and anonymous: an A2A 0.3.0 agent card (graded conformant) with search, detail and enquiry skills at `https://movehome.org/api/a2a`, a read-only MCP server at `https://movehome.org/mcp`, a second MCP server and REST API over its public registry of real-estate A2A agents, and an OAuth2-gated implementation of the RAIA Portal Feed API (OpenAPI 3.1.0) for CRMs pushing listings in.
+
+- Website: https://movehome.org/
+- Agent guide (llms.txt / skills.md): https://movehome.org/skills.md
+- Agent card: https://movehome.org/.well-known/agent-card.json
+- Source: https://github.com/MoveHome/MoveHome.Org
+- Profile index: [apis.yml](apis.yml)

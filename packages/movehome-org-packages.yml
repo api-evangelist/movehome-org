@@ -1,0 +1,20 @@
+generated: '2026-09-19'
+method: searched
+source: registry searches 2026-09-19
+package_count: 0
+packages: []
+searched:
+- {registry: npm, query: 'https://registry.npmjs.org/-/v1/search?text=movehome', result: '0 matching packages (only an unrelated moye-agent-sdk)'}
+- {registry: npm, query: 'https://registry.npmjs.org/-/v1/search?text=raia-protocol', result: 0 matching packages}
+- {registry: pypi, query: 'https://pypi.org/pypi/movehome/json', status: 404}
+- {registry: github, query: 'https://api.github.com/orgs/MoveHome/repos', result: '1 repository, MoveHome/MoveHome.Org — the Next.js site itself (package.json name "movehome", version 0.1.0, private: false but never published to npm); no SDK, CLI or client package'}
+- {registry: github, query: 'https://api.github.com/repos/MoveHome/MoveHome.Org/releases', result: 0 releases}
+note: >-
+  MoveHome publishes no client library, CLI or SDK in any registry searched, and its skills.md says so
+  plainly: "No SDK or API key is required for searching and reading. Copy the request shapes below
+  verbatim." The documented way in is raw HTTPS JSON-RPC (A2A), MCP, or REST. The RAIA Protocol project
+  ships a reference stdio MCP server and a Python SDK in github.com/estateaigents/raia-protocol (mcp/,
+  sdk/python/), but those are published by the RAIA Protocol Working Group under a different GitHub
+  organisation, point at registry.estateaigents.org rather than movehome.org, and are not first-party
+  MoveHome packages, so they are not listed here. The site's own runtime dependency for A2A is
+  @a2a-js/sdk ^0.3.13 (a Google-maintained library). No Packages or SDKs pointer is emitted.

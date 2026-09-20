@@ -1,0 +1,88 @@
+generated: '2026-09-19'
+method: searched
+source: openapi/movehome-org-raia-portal-feed-openapi.yaml
+docs:
+- https://movehome.org/skills.md
+- https://github.com/MoveHome/MoveHome.Org/blob/main/docs/raia-portal-feed-api.md#3-authentication
+- https://github.com/MoveHome/MoveHome.Org/blob/main/docs/raia-a2a-api.md
+summary:
+  types:
+  - none
+  - oauth2
+  oauth2_flows:
+  - clientCredentials
+  api_key_in: []
+  bearer: true
+  credential_classes: 2
+  headline: >-
+    Two postures on one host. The agent-facing surfaces — the A2A agent (all three skills, including the
+    create_enquiry write), both MCP servers and the A2A-registry REST API — are ANONYMOUS: no key, no token,
+    no signup ("Auth: none (anonymous)", skills.md), with per-IP rate limits as the only gate. The inbound
+    RAIA Portal Feed API is OAuth 2.0 client credentials: the MoveHome operator issues a client_id and
+    client_secret out-of-band, bound to one agent, a default branch and an allowed scope set; POST
+    https://movehome.org/oauth/token (HTTP Basic or form fields) mints a 1-hour HS256 Bearer JWT scoped to
+    feed.read / feed.write / products.write. No OIDC, no API keys, no RFC 8414/9728 discovery documents.
+schemes:
+- name: Anonymous
+  type: none
+  surfaces:
+  - https://movehome.org/api/a2a (A2A JSON-RPC — search_properties, get_property, create_enquiry)
+  - https://movehome.org/mcp and https://movehome.org/api/mcp (MCP, read-only)
+  - https://movehome.org/api/registry/mcp (MCP, read-only)
+  - https://movehome.org/api/registry/v1/* (REST — reads AND the register / re-sync / flag writes)
+  - https://movehome.org/api/enquire (website enquiry form POST)
+  controls:
+  - per-IP rate limits (60/min agent surfaces; 5/min enquiry; 10/min registry register; 5/min flag)
+  - create_enquiry duplicate suppression (same email + listing within ~10 min) and a per-email hourly cap
+  - registry registration validates the submitted card by fetching it from the declared well-known URI
+  observed:
+  - 'POST /api/a2a message/send with no credentials -> 200 completed Task (2026-09-19)'
+  - 'POST /mcp tools/list with no credentials -> 200, 2 tools'
+  - 'POST /api/registry/mcp tools/list with no credentials -> 200, 3 tools'
+  - 'GET /api/registry/v1/agents?limit=3 -> 200'
+  note: >-
+    The agent card declares no securitySchemes, which is accurate. CORS is open on every anonymous surface,
+    so browser-hosted agents can call them directly.
+- name: OAuth2ClientCredentials
+  type: oauth2
+  surfaces:
+  - https://movehome.org/api/raia/portal/v1/* (every operation except GET /healthz)
+  flows:
+  - flow: clientCredentials
+    tokenUrl: https://movehome.org/oauth/token
+    tokenUrl_in_spec: https://feed.example.com/oauth/token
+    scopes: 3
+    scopes_list: [feed.read, feed.write, products.write]
+  client_authentication: HTTP Basic (client_id:client_secret) or form fields client_id / client_secret; grant_type must be client_credentials
+  token:
+    format: JWT
+    alg: HS256
+    ttl_seconds: 3600
+    header: 'Authorization: Bearer <access_token>'
+    response: '{ access_token, token_type: "Bearer", expires_in: 3600, scope }'
+    scope_handling: requested scope is intersected with the credential's allowed_scopes; omit scope to receive all allowed scopes
+    verification: server-side only — HS256 with a shared secret; the published JWKS (/.well-known/jwks.json) is empty, so third parties cannot verify these tokens (the RAIA spec recommends RS256 for that reason)
+  credential_issuance:
+    how: out-of-band by the MoveHome operator (scripts/portal-create-credential.cjs in the provider's repository); the secret is shown once
+    contact: admin@movehome.org
+    signup: none — no self-service developer portal
+  rate_limit: token endpoint 10 requests/min per client; API 60/min per credential per endpoint group
+  observed:
+  - 'POST /oauth/token grant_type=client_credentials (no client) -> 401 application/problem+json {"type":"https://movehome.org/errors/unauthorized","detail":"Missing client_id / client_secret. Use HTTP Basic or form fields.","instance":"/oauth/token"} with WWW-Authenticate: Bearer realm="raia-portal-feed"'
+  - 'GET /api/raia/portal/v1/listings/AE-PROBE (no token) -> 401 {"detail":"Missing Authorization: Bearer header."}'
+  - 'GET /api/raia/portal/v1/branches/x/listings (no token) -> 401'
+  - 'GET /api/raia/portal/v1/healthz -> 200 (security: [])'
+  description: |-
+    Server-to-server OAuth2 client credentials flow. The token endpoint is
+    published by the implementer; credentials are issued out-of-band
+    during onboarding. Tokens are short-lived Bearer JWTs.
+  sources:
+  - openapi/movehome-org-raia-portal-feed-openapi.yaml
+  - https://github.com/MoveHome/MoveHome.Org/blob/main/docs/raia-portal-feed-api.md#3-authentication
+  - https://github.com/MoveHome/MoveHome.Org/blob/main/src/app/oauth/token/route.ts
+discovery:
+  openid_configuration: {url: 'https://movehome.org/.well-known/openid-configuration', status: 404}
+  oauth_authorization_server: {url: 'https://movehome.org/.well-known/oauth-authorization-server', status: 404}
+  oauth_protected_resource: {url: 'https://movehome.org/.well-known/oauth-protected-resource', status: 404}
+  jwks: {url: 'https://movehome.org/.well-known/jwks.json', status: 200, body: '{"keys":[]}'}
+scopes_detail: scopes/movehome-org-scopes.yml

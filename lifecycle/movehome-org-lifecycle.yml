@@ -1,0 +1,61 @@
+generated: '2026-09-19'
+method: searched
+source: https://github.com/MoveHome/MoveHome.Org
+derived_from: openapi/movehome-org-raia-portal-feed-openapi.yaml
+docs:
+- https://github.com/MoveHome/MoveHome.Org/blob/main/docs/raia-portal-feed-api.md
+- https://github.com/estateaigents/raia-protocol/blob/master/README.md
+- https://github.com/estateaigents/raia-protocol/blob/master/SPEC.md
+versioning:
+  scheme: URI-path major version on the REST surfaces (v1); protocol version fields on the agent surfaces
+  current_version: >-
+    Portal Feed API v1 in the path with OpenAPI info.version 0.1.0 and healthz reporting version "0.1.0";
+    registry API v1 in the path with healthz reporting "v1"; A2A card version 0.1.0 on protocolVersion
+    0.3.0; MCP servers 1.0.0 on protocol version 2025-06-18; the site package.json is 0.1.0.
+  policy_published: false
+  upstream_standard: >-
+    The Portal Feed contract and the listing/enquiry schemas are the RAIA Protocol's, whose README states
+    v0.2 is an "implementer release" and whose SPEC says "Breaking changes remain possible before v1.0
+    certification"; v0.2 already renamed letting_agent to listing_agent and made transaction_type and status
+    required. MoveHome's README says it implements v0.1 while vendoring the v0.2 schemas.
+  note: >-
+    No versioning or compatibility policy page exists on movehome.org (/docs, /changelog, /developers all
+    404). The version numbers do not agree across surfaces (0.1.0 / 1.0.0 / v1), which is a small but real
+    signal for anyone pinning against them.
+deprecation:
+  policy_published: false
+  sunset_header: false
+  deprecation_header: false
+  rfc8594: false
+  deprecated_operations: []
+  note: >-
+    Zero operations in the OpenAPI carry deprecated: true; no Sunset/Deprecation headers are declared; no
+    deprecation policy page. The A2A integrator guide describes v1 constraints (no streaming, no task
+    persistence) and a "Coming next: an MCP server" note that has since shipped, but no retirement of
+    anything. No Deprecation pointer is emitted.
+status_page:
+  url: null
+  probed:
+  - {url: 'https://movehome.org/status', status: 404}
+  live_signals:
+  - url: https://movehome.org/api/raia/portal/v1/healthz
+    status: 200
+    observed: '{"status":"ok","version":"0.1.0","service":"raia-portal-feed-api","checked_at":"2026-09-20T00:49:56.007Z"}'
+    auth: none
+  - url: https://movehome.org/api/registry/v1/healthz
+    status: 200
+    observed: '{"status":"ok","service":"movehome-a2a-registry","version":"v1"}'
+    auth: none
+  - url: https://a2aregistry.org
+    observed: 'Third-party health of the A2A agent: task_conformance WORKING, uptime_percentage 100 (checked 2026-09-14).'
+  note: Two unauthenticated liveness endpoints and a third-party uptime record, but no status page or incident history. No StatusPage pointer is emitted.
+sla:
+  url: null
+  uptime_target: null
+  note: None published. The About page describes a free, not-for-profit service; the Portal Feed docs say "Use a staging host for testing" without naming one.
+changelog:
+  url: null
+  note: No dated changelog; the GitHub repository has 0 releases and 0 tags. Commit history (last push 2026-06-21) is the only change record. No ChangeLog pointer is emitted.
+support_lifetime:
+  stated_period: null
+  note: Not stated anywhere found.

@@ -1,0 +1,31 @@
+generated: '2026-09-19'
+method: searched
+source: >-
+  https://movehome.org/skills.md — the provider's own agent-facing skills document (the agent card's
+  documentationUrl; byte-identical to /llms.txt), saved verbatim as movehome-org-skills.md. The two
+  generated skills are grounded in the live agent card / MCP tools/list (skill and tool names verified
+  against a2a/movehome-org-agent-card.json and mcp/movehome-org-mcp-tools.json) and in the RAIA Portal
+  Feed API OpenAPI (every operationId verified against openapi/movehome-org-raia-portal-feed-openapi.yaml).
+skills:
+- file: movehome-org-skills.md
+  name: MoveHome.org — A2A Agent Skills (for AI agents)
+  method: searched
+  source: https://movehome.org/skills.md
+  description: The provider's published instructions for calling its three A2A skills over JSON-RPC, with request shapes, result shapes, error codes, rate limits, the optional card-signature check and the registry API. Read this first.
+  api: a2a/movehome-org-agent-card.json
+  operations: 3
+  operation_ids: [search_properties, get_property, create_enquiry]
+- file: movehome-org-search-and-enquire.md
+  name: movehome-org-search-and-enquire
+  method: generated
+  description: Search the catalogue, inspect one listing, and — only with explicit user consent — submit an irreversible enquiry, via A2A or the read-only MCP twin.
+  api: a2a/movehome-org-agent-card.json
+  operations: 3
+  operation_ids: [search_properties, get_property, create_enquiry]
+- file: movehome-org-syndicate-listings.md
+  name: movehome-org-syndicate-listings
+  method: generated
+  description: Push and withdraw listings idempotently by reference through the OAuth2 client-credentials Portal Feed API, reconcile a branch, poll enquiries by cursor, and request a promotion.
+  api: openapi/movehome-org-raia-portal-feed-openapi.yaml
+  operations: 9
+  operation_ids: [getHealth, upsertListing, getListing, deleteListing, listBranchListings, listBranchEnquiries, getBranchPerformance, requestPremiumListingActivation, getPremiumListingActivation]

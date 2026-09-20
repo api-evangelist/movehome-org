@@ -1,0 +1,46 @@
+generated: '2026-09-19'
+method: searched
+source: https://github.com/MoveHome/MoveHome.Org/blob/main/docs/raia-a2a-api.md
+docs:
+- https://movehome.org/skills.md
+- json-schema/movehome-org-raia-enquiry.json
+- https://github.com/MoveHome/MoveHome.Org/blob/main/src/app/api/enquire/route.ts
+spec_type: Webhooks
+asyncapi_published: false
+summary: >-
+  MoveHome publishes no AsyncAPI, no event stream and no subscription API (A2A pushNotifications and
+  streaming are both declared false; MCP has no resources or notifications). It does operate ONE outbound
+  callback, documented in its integrator guide and its own route source: every enquiry created through the
+  A2A create_enquiry skill or the website form (POST /api/enquire) is "recorded and forwarded to the source
+  estate agent" by an HTTPS POST to the enquire endpoint the agent declared in its RAIA agent card, in the
+  RAIA enquiry.json shape. The receiver is the listing agency, not the caller; the delivery is SSRF-guarded
+  to public HTTPS hosts. Listing agents that integrate through the Portal Feed API instead POLL enquiries
+  (GET /branches/{branch_id}/enquiries with a cursor) — there is no push to CRMs. Recorded as a webhook
+  surface because it is a real, schema-bound, documented event delivery; not recorded as AsyncAPI because
+  none exists.
+webhooks:
+- event: enquiry.created
+  direction: outbound (MoveHome -> listing agent)
+  trigger: A2A skill create_enquiry or website POST /api/enquire completes validation and persistence
+  delivery: HTTP POST to the agent's RAIA agent-card endpoints.enquire URL (HTTPS, public hosts only)
+  payload_schema: json-schema/movehome-org-raia-enquiry.json
+  payload_fields: [enquiry_id, raia_id, 'enquirer {name, email, phone, preferred_contact}', message, 'viewing_request {preferred_dates[], party_size}', source, submitted_at]
+  security: not documented (no signature, secret or IP allow-list stated; the RAIA schema reserves a source/provenance block)
+  retries: not documented
+  receiver_registration: implicit — the agent's RAIA agent card at /.well-known/raia-agent.json declares the endpoint; MoveHome discovers it when aggregating the agency
+  evidence:
+  - source: https://github.com/MoveHome/MoveHome.Org/blob/main/docs/raia-a2a-api.md
+    quote: 'Records an enquiry and forwards it to the source agent (SSRF-guarded; HTTPS public hosts only — same pipeline as POST /api/enquire).'
+  - source: https://movehome.org/skills.md
+    quote: 'This records an enquiry and forwards it to the source estate agent (a real human gets it).'
+  - source: json-schema/movehome-org-raia-enquiry.json
+    quote: "Body of an enquiry POSTed to the agent card's endpoints.enquire URL. Initiates the RAIA Protocol session state machine described in SPEC.md section 6."
+polling_alternatives:
+- name: Portal Feed enquiries cursor
+  operation: listBranchEnquiries
+  url: https://movehome.org/api/raia/portal/v1/branches/{branch_id}/enquiries?since_enquiry_id=<next_cursor>&limit=100
+  note: The pull-side twin for CRMs; requires feed.read.
+not_found:
+- {url: 'https://movehome.org/asyncapi.yaml', status: 404}
+- {url: 'https://movehome.org/asyncapi.json', status: 404}
+- note: The GitHub tree carries no asyncapi document; A2A capabilities.pushNotifications false; capabilities.streaming false.

@@ -1,0 +1,181 @@
+generated: '2026-09-19'
+method: searched
+source: >-
+  https://movehome.org/skills.md (A2A + MCP semantics), the provider's integrator guides in
+  github.com/MoveHome/MoveHome.Org/docs (raia-a2a-api.md, raia-portal-feed-api.md), the RAIA Portal Feed
+  API OpenAPI (openapi/movehome-org-raia-portal-feed-openapi.yaml) and live unauthenticated probes of
+  https://movehome.org on 2026-09-19. Where a rule was read from the provider's open-source route handlers
+  rather than a docs page, the source file is named.
+description: >-
+  How MoveHome's four machine surfaces behave across every operation. They share one host, one problem+json
+  envelope, one rate limiter and one listing shape (RAIA), but split cleanly by direction: the agent
+  surfaces (A2A, MCP) and the registry are anonymous JSON-RPC/JSON reads with a single write (create an
+  enquiry), while the RAIA Portal Feed API is an OAuth2-gated inbound write surface for CRMs pushing
+  listings in. Idempotency, reversibility and pagination therefore differ per surface and are recorded per
+  surface below.
+base_urls:
+  a2a: https://movehome.org/api/a2a
+  mcp_property: https://movehome.org/mcp
+  mcp_registry: https://movehome.org/api/registry/mcp
+  registry_rest: https://movehome.org/api/registry/v1
+  portal_feed: https://movehome.org/api/raia/portal/v1
+  token: https://movehome.org/oauth/token
+api_style: JSON-RPC 2.0 over HTTPS POST (A2A, MCP); JSON over REST (registry, Portal Feed); JSON requests and responses throughout; snake_case fields; SCREAMING_SNAKE_CASE enums on the Portal Feed API, lower_snake enums on the agent surfaces
+
+authentication:
+  a2a: 'none — anonymous, including the create_enquiry write ("Auth: none (anonymous)", skills.md)'
+  mcp: none — anonymous on both servers; no OAuth metadata served
+  registry_rest: none — anonymous reads and writes (register, re-sync, flag), rate-limited per IP
+  portal_feed: OAuth 2.0 client credentials at POST /oauth/token (HTTP Basic or form client_id/client_secret), Bearer HS256 JWT, 1-hour TTL, scopes feed.read / feed.write / products.write intersected with the credential's allowed scopes; credentials issued out-of-band by the MoveHome operator
+  detail: authentication/movehome-org-authentication.yml
+
+idempotency:
+  supported: true
+  coverage: partial
+  mechanism: client-owned natural key on the Portal Feed API (PUT by {reference}); no Idempotency-Key header anywhere
+  header: null
+  scope:
+  - upsertListing
+  - deleteListing
+  retention: not applicable — the key is the listing reference itself, held for the life of the listing
+  description: >-
+    Portal Feed API: PUT /listings/{reference} is idempotent by design — {reference} is the client's own
+    stable id (^[A-Za-z0-9_-]{1,100}$, unique per branch); re-sending an identical body returns 200 with
+    action NO_CHANGE ("safe to re-send, idempotent" — docs §5), a changed body returns 200 UPDATED, a new
+    reference 201 CREATED. DELETE /listings/{reference} on an already-removed listing still returns 200
+    ("idempotent" — docs §6). The two product-activation POSTs (requestPremiumListingActivation,
+    requestFeaturedPropertyActivation) and the registry's POST register / POST flag have no replay
+    protection beyond a 409 on a duplicate wellKnownURI at registration. A2A create_enquiry has DUPLICATE
+    SUPPRESSION (same email + listing within ~10 minutes is dropped, plus a per-email hourly cap — skills.md
+    "Rate limits"), which limits the damage of a retry but is not a client-controlled idempotency key: an
+    agent that retries after a timeout outside that window sends a second real lead. The read surfaces are
+    inherently idempotent.
+  docs: https://github.com/MoveHome/MoveHome.Org/blob/main/docs/raia-portal-feed-api.md#5-put-listingsreference--the-core-endpoint
+
+reversibility:
+  grade: none
+  docs: null
+  note: >-
+    No write surface documents a reversal operation with a stated window, so nothing here earns
+    "documented" or "verified". Per surface: (1) A2A create_enquiry / POST /api/enquire forwards a real lead
+    to a human estate agent and skills.md marks it "WRITE — sends a real lead" with a consent instruction;
+    there is no cancel/withdraw skill and the docs state none — irreversible once sent. (2) Portal Feed
+    upsertListing can be re-PUT to correct a listing (an overwrite, not an undo; no version history is
+    exposed although the response carries a monotonically increasing version). (3) deleteListing withdraws
+    the public card; the docs do not say whether a subsequent PUT of the same reference restores it or
+    creates a new one, so no restore path is asserted. (4) Product activations have a status lifecycle
+    PENDING -> ACTIVE | EXPIRED | REJECTED | CANCELLED, but no cancel operation exists in the OpenAPI or
+    docs — CANCELLED is an operator-side state. (5) Registry register has a PUT re-sync but no delete;
+    a listed agent cannot remove itself through the API (the flag route only records a report). Nothing
+    above asserts a window the provider has not written down.
+  write_surfaces:
+  - operation: create_enquiry (A2A) / POST /api/enquire (website)
+    action: Record an enquiry and forward it to the source estate agent, with optional viewing request
+    reversal: none
+    reversal_operation: null
+    window: null
+    grade: none
+    stated_terms:
+    - source: https://movehome.org/skills.md
+      verbatim: 'This records an enquiry and forwards it to the source estate agent (a real human gets it). Only call it with the user''s explicit consent and their real contact details.'
+  - operation: upsertListing
+    action: Create or overwrite a listing under the client's reference
+    reversal: overwrite by re-PUT; withdraw by deleteListing
+    reversal_operation: deleteListing
+    window: null
+    grade: none
+    note: A withdrawal is a further write, not a rollback; the docs state no restore window.
+  - operation: deleteListing
+    action: Withdraw a listing (requires removal_reason)
+    reversal: undocumented
+    reversal_operation: null
+    window: null
+    grade: none
+  - operation: requestPremiumListingActivation / requestFeaturedPropertyActivation
+    action: Request a paid-product activation for a listing
+    reversal: none in the contract (CANCELLED exists as a status only)
+    reversal_operation: null
+    window: null
+    grade: none
+  - operation: 'POST /api/registry/v1/agents/register'
+    action: List an A2A agent card in MoveHome's public registry
+    reversal: none via API (no DELETE; PUT re-syncs, POST flag reports)
+    reversal_operation: null
+    window: null
+    grade: none
+
+dry_run:
+  supported: false
+  note: No sandbox, staging host, dry-run flag or test mode is published. The read skills/tools are anonymous and free, which is the practical rehearsal path; the write skill has no rehearsal.
+
+pagination:
+  a2a_search_properties:
+    style: offset
+    params: [limit (1-50, default 24), offset]
+    response_fields: [total, count, offset, limit, 'listings[]']
+  mcp_search_properties:
+    style: limit only
+    params: [limit (1-50)]
+    note: No offset parameter — the MCP tool cannot page past the first limit results.
+  registry_rest:
+    style: offset
+    params: [limit (1-50, default 20), offset (0-100000)]
+    response_fields: ['agents[]', total, limit, offset]
+    note: GET /api/registry/v1/all returns the whole registry in one document (2 agents on 2026-09-19).
+  portal_feed_branch_listings:
+    style: page number
+    params: [page (>=1), per_page (1-200; docs example 50), transaction_type, status, updated_since]
+    response_fields: [meta.page, meta.per_page, meta.total, 'listings[]']
+  portal_feed_enquiries:
+    style: cursor
+    params: [since_enquiry_id (= previous next_cursor), limit (docs example 100)]
+    response_fields: ['enquiries[]', next_cursor]
+
+filtering_and_expansion:
+  field_expansion: none
+  sparse_fields: none
+  filters: A2A/MCP search — un_locode, service_type, property_type, bedrooms_min/max, rent_pcm_max, asking_price_max, features[] (listing must contain all); registry — q, location, service_type, category, skill, healthy; Portal Feed branch listings — transaction_type, status, updated_since
+  note: A2A search params use a strict schema — unknown keys are rejected (skills.md).
+
+metadata:
+  supported: false
+  note: No client-supplied metadata field on any write. Listings carry a jurisdiction_extensions block per RAIA (GB, TH) set by the source agency.
+
+request_tracing:
+  header: X-Trace-Id
+  body_field: trace_id (inside every problem+json)
+  docs: https://github.com/MoveHome/MoveHome.Org/blob/main/docs/raia-portal-feed-api.md#9-errors-rfc-7807
+  a2a: taskId / contextId / messageId on every Task; no correlation header
+  note: Ask integrators to quote trace_id in support requests.
+
+versioning:
+  scheme: /v1 in the REST paths; protocolVersion on the agent card and MCP initialize
+  header: 'none (Mcp-Protocol-Version is accepted by CORS on the MCP server but not required)'
+  detail: lifecycle/movehome-org-lifecycle.yml
+
+error_envelope:
+  rest: 'application/problem+json {type, title, status, detail, instance, trace_id, timestamp, validation_errors[]} — RFC 9457/7807'
+  a2a: 'JSON-RPC error object for protocol faults; HTTP 200 Task with status.state "failed" for skill faults'
+  mcp: 'JSON-RPC error object for protocol faults; in-band {isError:true} content for tool faults'
+  detail: errors/movehome-org-problem-types.yml
+
+rate_limit_signaling:
+  headers: [X-RateLimit-Limit, X-RateLimit-Remaining, X-RateLimit-Reset (unix seconds), Retry-After (on 429)]
+  observed_on: POST https://movehome.org/api/a2a (limit 60, remaining 59)
+  exhaustion: 'HTTP 429 — problem+json type https://movehome.org/errors/rate-limit on REST; JSON-RPC -32000 on MCP; -32603 on A2A per the docs'
+  detail: rate-limits/movehome-org-rate-limits.yml
+
+cors:
+  a2a: 'access-control-allow-origin: *; methods GET, POST, OPTIONS; headers Content-Type'
+  mcp: 'access-control-allow-origin: *; methods POST, GET, OPTIONS; headers Content-Type, Mcp-Session-Id, Mcp-Protocol-Version, Authorization'
+  registry: open (REGISTRY_CORS)
+
+caching:
+  registry_reads: 'Cache-Control: public, max-age=30 (agents, agent detail), 60 (stats), 120 (all), 300 (badge SVG)'
+  healthz: 'Cache-Control: no-store'
+  a2a_and_mcp: 'public, max-age=0, must-revalidate'
+
+data_shape:
+  listing: 'RAIA listing card — raia_id, agent_id, url, headline, property_type, service_type, status, bedrooms, bathrooms, floor_area_sqm, furnishing, available_from, price{rent_pcm, daily_rate, asking_price, currency}, location{un_locode, jurisdiction, street_name, suburb, postcode_district, latitude, longitude}, features[], media{photo_url, photos[], floor_plan_url, video_url, tour_360_url}, jurisdiction_extensions'
+  identifiers: 'raia_id prop-{jurisdiction}-{org-slug}-{sequence}; agent_id org-{jurisdiction}-{company-number} (observed org-gb-07798821); UN/LOCODE for places'
+  detail: data-model/movehome-org-data-model.yml

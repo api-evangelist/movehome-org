@@ -1,0 +1,47 @@
+generated: '2026-09-19'
+method: searched
+source: https://movehome.org/
+docs:
+- https://github.com/MoveHome/MoveHome.Org#why-not-for-profit
+- https://github.com/MoveHome
+plan_count: 1
+currency: GBP
+model: free to list and free to query; a success fee only when a transaction completes, charged on the sister platform
+summary: >-
+  MoveHome publishes no pricing page (/pricing 404) and no tiers. Every machine surface is free and
+  anonymous — the A2A skills, both MCP servers, the registry API and the website search — and the Portal
+  Feed API credentials are issued by the operator at no stated price. The only money statements are on the
+  homepage and the GitHub README: "Free to list. A small success fee funds the platform only when a deal
+  completes" and "The full transaction is completed at a flat £1/property rate. No hidden fees." The
+  transaction itself (viewings, references, contracts, rent) is handled by the separate commercial company
+  EstateAigents.com Ltd at estateaigents.com, so the £1 figure is quoted here as the provider states it, not
+  as a MoveHome API price.
+plans:
+- id: free
+  name: Free (not-for-profit)
+  price: 0
+  currency: GBP
+  period: n/a
+  included:
+  - Anonymous A2A skills (search_properties, get_property, create_enquiry) at https://movehome.org/api/a2a
+  - Anonymous MCP tools at https://movehome.org/mcp and https://movehome.org/api/registry/mcp
+  - Anonymous registry API at https://movehome.org/api/registry/v1 (list, search, register, re-sync, flag)
+  - Listing syndication through the RAIA Portal Feed API with operator-issued OAuth2 client credentials
+  - Public listing cards at https://movehome.org/property/{raia_id}
+  overage: null
+  limits:
+  - 60 requests/min per IP on the agent surfaces; create_enquiry ~5/min per IP with duplicate suppression
+  - 60 requests/min per credential per endpoint group on the Portal Feed API; token endpoint 10/min
+  stated_fees:
+  - source: https://movehome.org/
+    verbatim: 'The full transaction is completed at a flat £1/property rate. No hidden fees.'
+    note: Charged on completion by the transaction platform (estateaigents.com), per the homepage's "How it works".
+  - source: https://github.com/MoveHome/MoveHome.Org#why-not-for-profit
+    verbatim: 'Free to list. A small success fee funds the platform only when a deal completes.'
+  - source: https://github.com/MoveHome
+    verbatim: 'No listing fees. Pay only when a deal completes.'
+  premium_products:
+    note: >-
+      The Portal Feed API carries two "portal product" activations (Premium Listings, Featured Properties)
+      inherited from the RAIA contract; MoveHome publishes no price for either and its README says listing
+      is free, so no price is recorded.

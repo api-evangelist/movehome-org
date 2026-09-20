@@ -1,0 +1,47 @@
+generated: '2026-09-19'
+method: searched
+source: openapi/movehome-org-raia-portal-feed-openapi.yaml
+docs: https://github.com/MoveHome/MoveHome.Org/blob/main/docs/raia-portal-feed-api.md#2-getting-credentials
+token_url: https://movehome.org/oauth/token
+summary: >-
+  Three OAuth 2.0 scopes, all on the RAIA Portal Feed API's client-credentials flow, declared in the
+  OpenAPI's OAuth2ClientCredentials scheme and documented identically in MoveHome's integrator guide. A
+  credential is bound to one agent and an ALLOWED set of scopes at issuance; a token request's scope is
+  intersected with that set, and omitting scope grants every allowed scope. The agent surfaces (A2A, both
+  MCP servers) and the registry API have no scopes because they have no authentication.
+schemes:
+- name: OAuth2ClientCredentials
+  source: openapi/movehome-org-raia-portal-feed-openapi.yaml
+  flows:
+  - flow: clientCredentials
+    tokenUrl: https://movehome.org/oauth/token
+    tokenUrl_in_spec: https://feed.example.com/oauth/token
+    note: The standard's OpenAPI carries an implementer placeholder; MoveHome's docs and the live 401 (WWW-Authenticate Bearer realm="raia-portal-feed") fix the real issuer. Bound in overlays/movehome-org-raia-portal-feed-overlay.yaml.
+  token: HS256 JWT, 1-hour TTL, jti audit-logged
+  client_authentication: HTTP Basic or form client_id / client_secret
+  description: |-
+    Server-to-server OAuth2 client credentials flow. The token endpoint is
+    published by the implementer; credentials are issued out-of-band
+    during onboarding. Tokens are short-lived Bearer JWTs.
+scopes:
+- scope: feed.read
+  description: Read listings, branches, performance and enquiries.
+  grants: [getListing, listBranchListings, getBranchPerformance, listBranchEnquiries, listPremiumListingActivations, getPremiumListingActivation, listFeaturedPropertyActivations, getFeaturedPropertyActivation]
+  flows: [clientCredentials]
+  sources: [openapi/movehome-org-raia-portal-feed-openapi.yaml, docs §2]
+- scope: feed.write
+  description: Upsert and remove listings.
+  grants: [upsertListing, deleteListing]
+  flows: [clientCredentials]
+  sources: [openapi/movehome-org-raia-portal-feed-openapi.yaml, docs §2]
+- scope: products.write
+  description: Request portal product activations.
+  grants: [requestPremiumListingActivation, requestFeaturedPropertyActivation]
+  flows: [clientCredentials]
+  sources: [openapi/movehome-org-raia-portal-feed-openapi.yaml, docs §2]
+unscoped:
+- {operation: getHealth, note: 'security: [] in the spec; live 200 without a token'}
+- {surface: 'A2A https://movehome.org/api/a2a', note: no authentication or scopes}
+- {surface: 'MCP https://movehome.org/mcp and /api/registry/mcp', note: no authentication or scopes}
+- {surface: 'Registry REST https://movehome.org/api/registry/v1', note: no authentication or scopes}
+scope_count: 3

@@ -1,0 +1,93 @@
+generated: '2026-09-19'
+method: derived
+source: >-
+  Derived by aligning the live MCP tools/list responses (mcp/movehome-org-mcp-tools.json,
+  mcp/movehome-org-registry-mcp-tools.json), the live A2A agent card (a2a/movehome-org-agent-card.json),
+  the provider's skills.md, the unauthenticated registry REST routes observed live under /api/registry/v1,
+  and the RAIA Portal Feed API OpenAPI 3.1.0 (openapi/movehome-org-raia-portal-feed-openapi.yaml, 13
+  operations). Confidence per row.
+purpose: >-
+  Make the agent-facing tool the first-class discovery unit and bind it to whatever machine-readable core
+  backs it. MoveHome's surfaces are projections of TWO different data cores, not one: the agent tools (MCP
+  property server, A2A skills) and the registry tools read a public Supabase mirror through server-side
+  queries, while the only OpenAPI the provider is bound by — the RAIA Portal Feed API — is the INBOUND
+  write side that CRMs use to push listings in. No MCP tool is backed by a Portal Feed operation, and no
+  Portal Feed operation has a tool. That asymmetry is the finding.
+surfaces:
+  rest_openapi: openapi/movehome-org-raia-portal-feed-openapi.yaml   # RAIA Portal Feed API, OAuth2 client credentials, base https://movehome.org/api/raia/portal/v1
+  rest_registry: https://movehome.org/api/registry/v1                # unauthenticated JSON; NO OpenAPI published — routes read from the provider's source
+  mcp_property: https://movehome.org/mcp                              # tools/list open (anonymous)
+  mcp_registry: https://movehome.org/api/registry/mcp                 # tools/list open (anonymous)
+  a2a: https://movehome.org/api/a2a                                   # message/send open (anonymous); skills from the card
+  graphql: null
+
+# MCP tool -> backing public contract. The A2A skill of the same name is listed as a twin where one exists.
+crosswalk:
+  - tool: search_properties
+    server: movehome-property
+    category: discovery
+    rest: []
+    a2a_skill: search_properties
+    binding: internal-query
+    confidence: high
+    note: >-
+      Backed by searchListings() in src/lib/queries.ts over the raia-public listing mirror, not by any
+      public REST operation. The A2A skill is the richer twin (adds bedrooms_max, features[], offset). The
+      inbound side of the same data is upsertListing on the Portal Feed API, but that is a write by the
+      listing agent, not a read the tool could call.
+  - tool: get_property
+    server: movehome-property
+    category: discovery
+    rest: []
+    a2a_skill: get_property
+    binding: internal-query
+    confidence: high
+    note: Backed by getListingByRaiaId(); the public HTML twin is https://movehome.org/property/{raia_id}.
+  - tool: search_agents
+    server: movehome-a2a-registry
+    category: registry
+    rest: ['GET /api/registry/v1/agents']
+    binding: rest
+    confidence: high
+    note: >-
+      Same parameters as the REST route (q, location, service_type, skill, healthy, limit; REST also takes
+      offset and category). The REST route has no OpenAPI, so the operation is named by method + path.
+  - tool: get_agent
+    server: movehome-a2a-registry
+    category: registry
+    rest: ['GET /api/registry/v1/agents/{idOrSlug}']
+    binding: rest
+    confidence: high
+  - tool: registry_stats
+    server: movehome-a2a-registry
+    category: registry
+    rest: ['GET /api/registry/v1/stats']
+    binding: rest
+    confidence: high
+
+# Surfaces with no MCP tool.
+a2a_only:
+  - skill: create_enquiry
+    reason: >-
+      The only write on the agent surface (records an enquiry and forwards it to the source estate agent).
+      Exposed on A2A and on the website form (POST /api/enquire), deliberately absent from the read-only MCP
+      server. Its wire payload mirrors the RAIA enquiry schema (json-schema/movehome-org-raia-enquiry.json).
+
+rest_only:
+  - group: RAIA Portal Feed API (OAuth2 client credentials; inbound syndication for CRMs and agencies)
+    operations: [getHealth, upsertListing, getListing, deleteListing, listBranchListings, getBranchPerformance, listBranchEnquiries, listPremiumListingActivations, requestPremiumListingActivation, getPremiumListingActivation, listFeaturedPropertyActivations, requestFeaturedPropertyActivation, getFeaturedPropertyActivation]
+    note: None has an MCP tool or A2A skill; these are for the listing agent's CRM, not for a buyer's agent.
+  - group: A2A registry REST (unauthenticated; no OpenAPI)
+    operations: ['GET /api/registry/v1/all', 'GET /api/registry/v1/healthz', 'GET /api/registry/v1/agents/{idOrSlug}/badge', 'POST /api/registry/v1/agents/register', 'PUT /api/registry/v1/agents/{idOrSlug}', 'POST /api/registry/v1/agents/{idOrSlug}/flag']
+    note: The registry's three writes (register, re-sync, flag) and its bulk/health/badge reads have no tool.
+
+coverage:
+  mcp_tools_named: 5
+  mcp_tools_bound_to_rest: 3
+  mcp_tools_internal_query: 2
+  a2a_skills: 3
+  a2a_skills_with_mcp_twin: 2
+  rest_operations_openapi: 13
+  rest_operations_openapi_with_tool: 0
+  rest_routes_registry: 9
+  rest_routes_registry_with_tool: 3

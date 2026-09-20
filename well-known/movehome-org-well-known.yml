@@ -1,0 +1,142 @@
+generated: '2026-09-19'
+method: probed
+source: >-
+  Live GET probes of the named /.well-known/* path list on movehome.org and www.movehome.org, 2026-09-19.
+  Every row below is a request that was actually issued; every status is the one returned.
+summary:
+  hosts_probed: 2
+  paths_probed: 36
+  documents_served: 3
+  hit_count: 3
+  note: >-
+    MoveHome serves the A2A agent card at both the canonical /.well-known/agent-card.json and the legacy
+    /.well-known/agent.json (byte-identical, 2,090 bytes, application/json — captured in a2a/), and a
+    JWKS at /.well-known/jwks.json that is served but EMPTY ({"keys":[]}), so the optional ES256 card
+    signature its skills.md describes cannot currently be verified. Every other named path — security.txt,
+    OpenID/OAuth discovery, RFC 9728 protected-resource metadata, RFC 9727 api-catalog, APIs.json,
+    ai-plugin, UCP/ACP, AAuth — returns the site's real Next.js 404 page (7,664 bytes, text/html), not an
+    SPA shell that 200s everything, so the three 200s are served documents. www.movehome.org serves the
+    identical set without redirecting. The MCP servers (/mcp and /api/registry/mcp) and the OAuth2 token
+    endpoint (/oauth/token) all live on this same apex host, so the RFC 9728 and RFC 8414 rows below are
+    also the MCP-host and authorization-server probes: none is served. The RAIA-native
+    /.well-known/raia-agent.json, which MoveHome's About page asks estate agents to publish, is not served
+    by MoveHome itself (it is a consumer, not a RAIA estate agent).
+hosts:
+- host: movehome.org
+  role: Website, A2A JSON-RPC host, MCP host (/mcp, /api/registry/mcp), registry REST host, RAIA Portal Feed API host and OAuth2 token issuer — one Vercel origin
+  documents:
+  - path: /.well-known/agent-card.json
+    status: 200
+    content_type: application/json
+    bytes: 2090
+    file: ../a2a/movehome-org-agent-card.json
+    standard: A2A Agent Card (protocolVersion 0.3.0)
+    note: Saved verbatim under a2a/ and graded in a2a/movehome-org-a2a.yml (conformant).
+  - path: /.well-known/agent.json
+    status: 200
+    content_type: application/json
+    bytes: 2090
+    file: ../a2a/movehome-org-agent-card.json
+    standard: A2A Agent Card (legacy pre-0.3 path)
+    note: Byte-identical to the canonical document; the provider's own docs call this path primary.
+  - path: /.well-known/jwks.json
+    status: 200
+    content_type: application/json
+    bytes: 11
+    file: movehome-org-jwks.json
+    standard: JWK Set (RFC 7517)
+    note: 'Served but empty: {"keys":[]}. Named by skills.md as the ES256 verification key set for an optional agent-card JWS; no key is published and the card is unsigned.'
+  - path: /.well-known/security.txt
+    status: 404
+  - path: /security.txt
+    status: 404
+  - path: /.well-known/openid-configuration
+    status: 404
+  - path: /.well-known/oauth-authorization-server
+    status: 404
+    note: This host IS the OAuth2 client-credentials issuer for the RAIA Portal Feed API (POST /oauth/token, WWW-Authenticate Bearer realm="raia-portal-feed"), and publishes no RFC 8414 metadata for it.
+  - path: /.well-known/oauth-protected-resource
+    status: 404
+    note: This is also the MCP resource host (https://movehome.org/mcp and /api/registry/mcp); no RFC 9728 metadata is served. Both MCP servers are anonymous, so no protected-resource document is strictly required.
+  - path: /mcp/.well-known/oauth-protected-resource
+    status: 404
+  - path: /.well-known/oauth-protected-resource/mcp
+    status: 404
+  - path: /.well-known/api-catalog
+    status: 404
+  - path: /.well-known/api-catalog.json
+    status: 404
+  - path: /.well-known/ai-plugin.json
+    status: 404
+  - path: /.well-known/ucp.json
+    status: 404
+  - path: /.well-known/acp.json
+    status: 404
+  - path: /.well-known/aauth-resource.json
+    status: 404
+  - path: /.well-known/apis.json
+    status: 404
+  - path: /apis.json
+    status: 404
+  - path: /apis.yml
+    status: 404
+  - path: /.well-known/mcp.json
+    status: 404
+  - path: /.well-known/raia-agent.json
+    status: 404
+    note: The RAIA Protocol discovery document for estate agents. MoveHome is a RAIA consumer/aggregator and does not publish one.
+  - path: /llms.txt
+    status: 200
+    content_type: text/markdown
+    bytes: 8659
+    file: ../llms/movehome-org-llms.txt
+    note: Not a /.well-known/ path; recorded here because it is the provider's agent-facing discovery document (identical to /skills.md, the card's documentationUrl).
+  - path: /robots.txt
+    status: 404
+  - path: /sitemap.xml
+    status: 404
+- host: www.movehome.org
+  role: Alias of the apex; serves the same documents without redirecting
+  documents:
+  - path: /.well-known/agent-card.json
+    status: 200
+    content_type: application/json
+    bytes: 2090
+    file: ../a2a/movehome-org-agent-card.json
+    note: Identical to the apex document.
+  - path: /.well-known/agent.json
+    status: 200
+    content_type: application/json
+    bytes: 2090
+    file: ../a2a/movehome-org-agent-card.json
+  - path: /.well-known/security.txt
+    status: 404
+  - path: /.well-known/openid-configuration
+    status: 404
+  - path: /.well-known/oauth-authorization-server
+    status: 404
+  - path: /.well-known/oauth-protected-resource
+    status: 404
+  - path: /.well-known/api-catalog
+    status: 404
+  - path: /.well-known/api-catalog.json
+    status: 404
+  - path: /.well-known/ai-plugin.json
+    status: 404
+  - path: /.well-known/ucp.json
+    status: 404
+  - path: /.well-known/acp.json
+    status: 404
+  - path: /.well-known/aauth-resource.json
+    status: 404
+  - path: /.well-known/apis.json
+    status: 404
+  - path: /apis.json
+    status: 404
+  - path: /apis.yml
+    status: 404
+  - path: /llms.txt
+    status: 200
+    content_type: text/markdown
+    bytes: 8659
+    file: ../llms/movehome-org-llms.txt

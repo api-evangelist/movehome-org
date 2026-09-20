@@ -1,0 +1,71 @@
+overlay: 1.0.0
+info:
+  title: MoveHome.org deployment overlay for the RAIA Portal Feed API
+  version: 1.0.0
+  description: >-
+    API Evangelist enhancements to openapi/movehome-org-raia-portal-feed-openapi.yaml, the RAIA Protocol
+    Working Group's vendor-neutral OpenAPI 3.1.0 for the Portal Feed API, which Move Home Organisation CIC
+    implements at https://movehome.org/api/raia/portal/v1 (per docs/raia-portal-feed-api.md in the
+    provider's repository, and confirmed live on 2026-09-19: GET /healthz 200
+    {"service":"raia-portal-feed-api","version":"0.1.0"}; unauthenticated calls 401 with WWW-Authenticate
+    Bearer realm="raia-portal-feed"). The original is kept verbatim; this overlay binds the
+    implementer-hosted placeholders (feed.example.com) to MoveHome's real hosts and records the deployment
+    facts the provider documents. Nothing here adds an operation, parameter or schema the provider has not
+    published.
+  x-generated: '2026-09-19'
+  x-method: generated
+  x-source: https://github.com/MoveHome/MoveHome.Org/blob/main/docs/raia-portal-feed-api.md
+extends: ../openapi/movehome-org-raia-portal-feed-openapi.yaml
+actions:
+- target: $.servers
+  description: Replace the standard's implementer-hosted placeholders with MoveHome's live base URL (docs §1 "API base https://movehome.org/api/raia/portal/v1"; the docs say to "Use a staging host for testing" but name none).
+  update:
+  - url: https://movehome.org/api/raia/portal/v1
+    description: Production (Move Home Organisation CIC, Vercel lhr1)
+  remove: false
+- target: $.servers[?(@.url == 'https://feed.example.com/api/raia/portal/v1')]
+  remove: true
+- target: $.servers[?(@.url == 'https://staging.feed.example.com/api/raia/portal/v1')]
+  remove: true
+- target: $.servers[?(@.url == 'http://localhost:8787/api/raia/portal/v1')]
+  remove: true
+- target: $.components.securitySchemes.OAuth2ClientCredentials.flows.clientCredentials
+  description: Bind the token endpoint to MoveHome's issuer (docs §3; live 401 observed at this URL on 2026-09-19).
+  update:
+    tokenUrl: https://movehome.org/oauth/token
+- target: $.components.securitySchemes.OAuth2ClientCredentials
+  description: Deployment facts the provider documents that the standard leaves to the implementer.
+  update:
+    x-movehome-deployment:
+      token_ttl_seconds: 3600
+      token_format: HS256 JWT (the standard recommends RS256; MoveHome is both issuer and verifier and publishes an empty JWKS)
+      client_authentication: HTTP Basic or form client_id/client_secret
+      credential_issuance: out-of-band by the MoveHome operator (admin@movehome.org); the secret is shown once
+      token_endpoint_rate_limit: 10 requests per minute per client
+      www_authenticate_realm: raia-portal-feed
+- target: $.info
+  description: Provider identity for this deployment (the original info.contact is the RAIA Protocol Working Group, which owns the contract).
+  update:
+    x-implementer:
+      organization: Move Home Organisation CIC
+      companies_house: '17202438'
+      url: https://movehome.org
+      contact: admin@movehome.org
+      docs: https://github.com/MoveHome/MoveHome.Org/blob/main/docs/raia-portal-feed-api.md
+      health: https://movehome.org/api/raia/portal/v1/healthz
+      public_card_url_pattern: https://movehome.org/property/{raia_id}
+    x-rate-limits:
+      per_credential_per_endpoint_group_per_minute: 60
+      headers: [X-RateLimit-Limit, X-RateLimit-Remaining, X-RateLimit-Reset, Retry-After]
+    x-request-tracing:
+      header: X-Trace-Id
+      body_field: trace_id
+- target: $.paths['/listings/{reference}'].put
+  description: Document the idempotency contract the provider states (docs §5).
+  update:
+    x-idempotent: true
+    x-idempotency-note: 'Re-sending an identical body returns 200 with action NO_CHANGE; a changed body 200 UPDATED; a new reference 201 CREATED. Max body 1 MB.'
+- target: $.paths['/listings/{reference}'].delete
+  update:
+    x-idempotent: true
+    x-idempotency-note: Deleting an already-removed listing still returns 200; removal_reason is required.

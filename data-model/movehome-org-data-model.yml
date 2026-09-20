@@ -1,0 +1,102 @@
+generated: '2026-09-19'
+method: derived
+source: openapi/movehome-org-raia-portal-feed-openapi.yaml
+docs:
+- json-schema/movehome-org-raia-listing.json
+- json-schema/movehome-org-raia-enquiry.json
+- json-schema/movehome-org-raia-agent-card.json
+- https://github.com/MoveHome/MoveHome.Org/blob/main/src/lib/registry/types.ts
+summary: >-
+  Derived from the 44 component schemas of the RAIA Portal Feed API OpenAPI, the three RAIA JSON Schemas
+  vendored in the provider's repository (listing, enquiry, agent card), the public listing projection the
+  A2A/MCP surfaces return, and the registry row type. Two graphs share one host. The PROPERTY graph: a
+  LISTING (raia_id) belongs to an AGENT (agent_id, an estate agency identified by its Companies House
+  number, e.g. org-gb-07798821) and, on the inbound side, to a BRANCH of the CREDENTIAL that pushed it;
+  an ENQUIRY targets a listing and is forwarded to the agent's enquire endpoint; PRODUCT ACTIVATIONS
+  attach to a listing. The REGISTRY graph: a REGISTERED AGENT is an A2A agent card fetched from a
+  well_known_uri, with health and conformance facts. Links are by id field, not $ref-embedded objects,
+  and there is no expansion parameter — a client resolves the graph with follow-up calls.
+id_style:
+  format: prefixed, jurisdiction-qualified slugs for RAIA entities; UUIDs for MoveHome-internal rows
+  prefixes:
+  - {entity: Listing, example: prop-gb-rlf-001141, pattern: 'prop-{jurisdiction}-{org-slug}-{sequence} (^prop-[a-z]{2}-[a-z0-9-]{2,32}-[0-9]{4,}$)', source: RAIA SPEC §2.2; src/lib/a2a/skills.ts}
+  - {entity: Agent (estate agency), example: org-gb-07798821, pattern: 'org-{jurisdiction}-{company-number}', source: observed listing.agent_id; RAIA agent-card schema}
+  - {entity: Client listing reference (Portal Feed), example: REF_001, pattern: '^[A-Za-z0-9_-]{1,100}$, unique per branch, owned by the pushing CRM', source: OpenAPI ListingReference}
+  - {entity: Registered A2A agent, example: 9fe1cc08-50df-4ad9-ab56-c8b66e87c4e3 / estateaigents-com-ltd, pattern: 'uuid id + human slug; either accepted as {idOrSlug}', source: registry API}
+  - {entity: Task / Context / Message (A2A), example: 8847e679-84cc-454d-bf70-571e28280378, pattern: UUID v4 per call; not persisted}
+  - {entity: Enquiry, example: enquiry_id (uuid), source: RAIA enquiry schema; enquiry_receipt artifact}
+  - {entity: Place, example: GBLON, pattern: UN/LOCODE 5 chars}
+entities:
+- name: Listing
+  description: A property listing in the RAIA canonical shape. The public projection (card) is what A2A search_properties/get_property and MCP return; the full RAIA schema adds provenance, visibility, publish window, snapshot and sync bookkeeping.
+  schemas: [Listing, ListingUpsert, ResidentialListingInput, CommercialListingInput, PublicCardProjection, BranchListingSummary, 'json-schema/movehome-org-raia-listing.json']
+  key_fields: [raia_id, agent_id, agent_card_url, un_locode, 'service_type (long_term|short_term|sale)', property_type, listing_status/status, bedrooms, bathrooms, floor_area_sqm, rent_pcm, daily_rate, asking_price, currency, 'features[]', media, 'jurisdiction_extensions {GB, TH}', synced_at]
+  relationships:
+  - {belongs_to: Agent, via: agent_id}
+  - {belongs_to: Branch, via: 'branch_id (Portal Feed side only)'}
+  - {belongs_to: Credential, via: 'reference (the pushing CRM''s id, unique per branch)'}
+  - {has_many: Enquiry, via: raia_id}
+  - {has_many: ProductActivation, via: 'customer_listing_id / listing_id'}
+  - {has_one: PublicCard, via: 'url https://movehome.org/property/{raia_id}'}
+  - {has_one: Place, via: location.un_locode}
+- name: Agent (estate agency)
+  description: The RAIA-compliant source of a listing, identified by a jurisdiction-qualified organisation id and discoverable through a RAIA agent card at /.well-known/raia-agent.json on its own domain. MoveHome forwards enquiries to its endpoints.enquire URL.
+  schemas: ['json-schema/movehome-org-raia-agent-card.json (RAIA Agent Card v0.2)']
+  key_fields: [agent_id, name, 'endpoints {listings, enquire, ...}', 'jurisdictions[]', companies_house_number, verification, capabilities, provenance_signing]
+  relationships:
+  - {has_many: Listing, via: agent_id}
+  - {has_many: Enquiry, via: 'forwarded to endpoints.enquire (outbound POST)'}
+  - {has_many: Branch, via: 'X-RAIA-Branch-Id / credential default branch (Portal Feed side)'}
+- name: Branch
+  description: A branch of a listing agent on the inbound Portal Feed side; the unit of inventory reconciliation, performance reporting and enquiry polling.
+  schemas: [BranchListingsPage, BranchPerformanceReport, PerformanceMetrics, BranchEnquiriesPage]
+  relationships:
+  - {belongs_to: Agent, via: credential binding}
+  - {has_many: Listing, via: branch_id}
+  - {has_many: BranchEnquiry, via: 'branch_id (cursor since_enquiry_id)'}
+  - {has_many: DailyMetrics, via: 'by_day[] (impressions, detail_views, click_throughs, phone_reveals, brochure_downloads, enquiries)'}
+- name: Credential
+  description: An OAuth2 client (client_id/client_secret) issued by the MoveHome operator, bound to one agent, a default branch and a set of allowed scopes (feed.read, feed.write, products.write); mints 1-hour HS256 access tokens.
+  schemas: []
+  relationships:
+  - {belongs_to: Agent, via: operator binding}
+  - {has_one: Branch, via: default branch}
+  - {has_many: AccessToken, via: 'jti, audit-logged'}
+- name: Enquiry
+  description: A prospective tenant/buyer's enquiry on a listing, optionally with a viewing request; created by A2A create_enquiry or the website form, persisted, and forwarded to the source agent in the RAIA enquiry shape. Polled back by the listing agent's CRM through listBranchEnquiries.
+  schemas: [BranchEnquiry, 'json-schema/movehome-org-raia-enquiry.json']
+  key_fields: [enquiry_id, raia_id, 'enquirer {name, email, phone, preferred_contact}', message, 'viewing_request {preferred_dates[], party_size}', source, submitted_at]
+  relationships:
+  - {belongs_to: Listing, via: raia_id}
+  - {belongs_to: Agent, via: 'forwarded to the listing''s agent'}
+  - {has_one: ViewingRequest, via: viewing_request}
+- name: ProductActivation
+  description: A request to promote a listing as a Premium Listing (with highlights) or Featured Property; status PENDING -> ACTIVE | EXPIRED | REJECTED | CANCELLED.
+  schemas: [ProductActivation, ProductActivationsPage, PremiumListingActivationRequest, FeaturedPropertyActivationRequest, PremiumListingHighlight, ProductActivationStatus]
+  relationships:
+  - {belongs_to: Listing, via: 'customer_listing_id (client reference) or listing_id'}
+  - {belongs_to: Credential, via: products.write scope}
+- name: RegisteredAgent
+  description: An A2A agent card ingested into MoveHome's public registry of real-estate agents (a different graph from the RAIA estate-agent card above — this is Google A2A). Carries the normalised card fields plus health, uptime, task conformance, signature and domain verification.
+  schemas: ['PublicRegistryAgent (src/lib/registry/types.ts)']
+  key_fields: [id, slug, name, well_known_uri, a2a_url, provider_org, provider_url, protocol_version, preferred_transport, capabilities, 'skills[]', 'locations[]', 'service_types[]', 'categories[]', signature_verified, domain_verified, is_healthy, uptime_percentage, 'task_conformance {category, passed, checked_at}']
+  relationships:
+  - {has_one: AgentCard, via: 'well_known_uri (raw_card kept)'}
+  - {has_many: RegistrySkill, via: 'skills[]'}
+  - {has_one: Badge, via: '/api/registry/v1/agents/{idOrSlug}/badge (SVG)'}
+  - {has_many: Flag, via: 'POST .../flag (count only)'}
+- name: Task (A2A)
+  description: The A2A Task returned by every message/send — synchronous, terminal (completed | failed), never persisted (tasks/get always -32001). Carries artifacts named search_results, property or enquiry_receipt.
+  schemas: [A2A Task, Message, Artifact, DataPart]
+  relationships:
+  - {has_many: Artifact, via: 'artifacts[]'}
+  - {has_many: Message, via: 'history[]'}
+enums:
+  service_type: [long_term, short_term, sale]
+  property_type_agent_surfaces: [flat, house, studio, commercial, land, other]
+  transaction_type_portal_feed: [SALES, LETTINGS]
+  removal_reason: [SOLD_BY_US, SOLD_BY_ANOTHER_AGENT, LET_BY_US, LET_BY_ANOTHER_AGENT, WITHDRAWN_FROM_MARKET, LOST_INSTRUCTION, REMOVED]
+  product_activation_status: [PENDING, ACTIVE, EXPIRED, REJECTED, CANCELLED]
+  task_conformance_category: [WORKING, DEGRADED, FAILING, UNKNOWN]
+  preferred_contact: [email, phone, whatsapp]
+render: null

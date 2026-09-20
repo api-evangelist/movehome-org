@@ -1,0 +1,112 @@
+generated: '2026-09-19'
+method: derived
+source: openapi/movehome-org-raia-portal-feed-openapi.yaml
+probed: true
+docs:
+- https://github.com/MoveHome/MoveHome.Org/blob/main/docs/raia-portal-feed-api.md#9-errors-rfc-7807
+- https://github.com/MoveHome/MoveHome.Org/blob/main/docs/raia-a2a-api.md#5-errors-json-rpc
+- https://movehome.org/skills.md
+format: rfc9457
+envelope:
+  media_type: application/problem+json
+  fields:
+  - name: type
+    description: 'URI under https://movehome.org/errors/ naming the class (not-found, validation, unauthorized, forbidden, conflict, rate-limit, server); falls back to https://movehome.org/errors/<status> for uncatalogued statuses. The URIs are identifiers — they 404 as pages.'
+  - name: title
+    description: 'Short human title ("Not Found", "Validation failed").'
+  - name: status
+    description: HTTP status, repeated in the body.
+  - name: detail
+    description: 'Human explanation; on 401 it says which credential was missing ("Missing Authorization: Bearer header.").'
+  - name: instance
+    description: The request path, on the Portal Feed API and token endpoint.
+  - name: trace_id
+    description: 32-hex trace id, also sent as the X-Trace-Id response header; the docs ask integrators to quote it in support requests.
+  - name: timestamp
+    description: ISO-8601 UTC.
+  - name: validation_errors
+    description: 'On 400 only: [{field, message, code}] — codes observed invalid_type (zod) and documented INVALID / MISSING.'
+  observed:
+  - {status: 404, url: 'GET https://movehome.org/api/registry/v1/agents/does-not-exist-xyz', body: '{"type":"https://movehome.org/errors/not-found","title":"Not Found","status":404,"detail":"No listed agent with that id or slug.","trace_id":"274622d5ad3f4b9b995cb55c15b8393d","timestamp":"2026-09-20T00:46:18.403Z"}'}
+  - {status: 400, url: 'POST https://movehome.org/api/registry/v1/agents/register (body {})', body: '{"type":"https://movehome.org/errors/validation","title":"Validation failed","status":400,"detail":"wellKnownURI is required and must be a URL.","trace_id":"8c4f66cb4f9f41fcb3f7a9e2185c2d00","timestamp":"2026-09-20T00:46:18.629Z","validation_errors":[{"field":"wellKnownURI","message":"Required","code":"invalid_type"}]}'}
+  - {status: 401, url: 'POST https://movehome.org/oauth/token (grant_type only)', body: '{"type":"https://movehome.org/errors/unauthorized","title":"Unauthorized","status":401,"detail":"Missing client_id / client_secret. Use HTTP Basic or form fields.","instance":"/oauth/token","trace_id":"7b0583903b9344759ee7588912f9e86d","timestamp":"2026-09-20T00:49:56.254Z"}', headers: 'WWW-Authenticate: Bearer realm="raia-portal-feed"'}
+  - {status: 401, url: 'GET https://movehome.org/api/raia/portal/v1/listings/AE-PROBE', body: '{"type":"https://movehome.org/errors/unauthorized","title":"Unauthorized","status":401,"detail":"Missing Authorization: Bearer header.","instance":"/api/raia/portal/v1/listings/AE-PROBE",...}'}
+  - {status: 405, url: 'GET https://movehome.org/api/registry/v1/agents/register and GET https://movehome.org/api/enquire', note: Empty body; POST-only routes.}
+  - {status: 404, url: 'https://movehome.org/openapi.json (and every unknown path)', note: 'The site-wide 404 is the Next.js not-found HTML page (7,664 bytes), NOT a problem+json — only API routes emit the envelope.'}
+  note: >-
+    Problem details are consistent across the three REST surfaces (registry, Portal Feed, token endpoint)
+    because they share src/lib/portal/problem.ts. The JSON-RPC surfaces do not use it: MCP returns JSON-RPC
+    error objects (and in-band isError tool results), and A2A returns EITHER a JSON-RPC error (protocol
+    problems) OR a normal HTTP 200 Task whose status.state is "failed" (skill problems). An agent therefore
+    needs three error readers for one provider.
+problem_types:
+- status: 400
+  type: https://movehome.org/errors/validation
+  title: Validation failed
+  source_operations: [upsertListing, deleteListing, getBranchPerformance, requestPremiumListingActivation, requestFeaturedPropertyActivation, 'POST /api/registry/v1/agents/register', 'POST /api/enquire']
+  causes:
+  - Listing payload failed schema validation (validation_errors[] names each field).
+  - DELETE without a removal_reason; performance window missing from/to or wider than 28 days.
+  - Registry registration body without a wellKnownURI URL; non-JSON body ("Request body must be JSON.").
+  remediation: Fix the named fields and resend; the write is rejected before anything is stored.
+- status: 401
+  type: https://movehome.org/errors/unauthorized
+  title: Unauthorized
+  source_operations: [upsertListing, getListing, deleteListing, listBranchListings, getBranchPerformance, listBranchEnquiries, requestPremiumListingActivation, requestFeaturedPropertyActivation, 'POST /oauth/token']
+  causes: [Missing Authorization Bearer header, expired or malformed HS256 token, wrong signature or alg, missing client_id/client_secret on the token endpoint.]
+  remediation: Mint a new token at POST /oauth/token (1-hour TTL; cache it — the token endpoint is capped at 10/min).
+- status: 403
+  type: https://movehome.org/errors/forbidden
+  title: Forbidden
+  source_operations: [upsertListing, getListing, deleteListing, listBranchListings, getBranchPerformance, listBranchEnquiries, requestPremiumListingActivation, requestFeaturedPropertyActivation]
+  causes: [Token lacks the required scope (feed.read, feed.write or products.write); credential not bound to the requested branch.]
+  remediation: Request the scope when minting the token; scopes are intersected with what the credential allows.
+- status: 404
+  type: https://movehome.org/errors/not-found
+  title: Not Found
+  source_operations: [getListing, deleteListing, listBranchListings, getBranchPerformance, listBranchEnquiries, getPremiumListingActivation, getFeaturedPropertyActivation, 'GET /api/registry/v1/agents/{idOrSlug}', 'PUT /api/registry/v1/agents/{idOrSlug}', 'POST /api/registry/v1/agents/{idOrSlug}/flag']
+  causes: [Listing reference not found or not owned by the credential; unknown branch; unknown activation; no listed agent with that id or slug.]
+- status: 409
+  type: https://movehome.org/errors/conflict
+  title: Conflict
+  source_operations: [upsertListing, 'POST /api/registry/v1/agents/register']
+  causes:
+  - Listing reference already exists under a different branch for the same agent.
+  - 'Agent already registered — detail names the slug and says "Use PUT /api/registry/v1/agents/{id} to re-sync."'
+- status: 429
+  type: https://movehome.org/errors/rate-limit
+  title: Too Many Requests
+  source_operations: [upsertListing, getListing, deleteListing, listBranchListings, getBranchPerformance, listBranchEnquiries, requestPremiumListingActivation, requestFeaturedPropertyActivation, 'POST /oauth/token', 'POST /api/registry/v1/agents/register', 'PUT /api/registry/v1/agents/{idOrSlug}', 'POST /api/registry/v1/agents/{idOrSlug}/flag', 'POST /api/enquire']
+  headers: [Retry-After, X-RateLimit-Limit, X-RateLimit-Remaining, X-RateLimit-Reset]
+  remediation: Back off for Retry-After seconds; the window is a fixed UTC minute. See rate-limits/movehome-org-rate-limits.yml.
+- status: 500
+  type: https://movehome.org/errors/server
+  title: Internal Server Error
+  source_operations: ['5XX on every Portal Feed operation', 'registry writes ("Could not register the agent.")']
+- status: 202
+  title: Accepted (asynchronous)
+  note: Not an error, but part of the envelope contract — upsertListing and deleteListing may answer 202 with an AsyncAccepted body when the implementer processes asynchronously; MoveHome's docs describe only synchronous 200/201.
+json_rpc_errors:
+  a2a:
+    endpoint: https://movehome.org/api/a2a
+    protocol_level:
+    - {code: -32700, meaning: 'Parse error (invalid JSON) — HTTP 400'}
+    - {code: -32600, meaning: 'Invalid JSON-RPC request — HTTP 400'}
+    - {code: -32601, meaning: Unknown method}
+    - {code: -32602, meaning: 'Invalid params or unknown skill (error.data.validation_errors[]); observed for an unknown method name on the live SDK'}
+    - {code: -32001, meaning: 'Task not found (tasks/get; tasks are not persisted in v1). Observed.'}
+    - {code: -32004, meaning: 'Unsupported operation — message/stream requires streaming capability. Observed.'}
+    - {code: -32603, meaning: 'Internal error; also the code the docs give for a rate-limit breach (HTTP 429 with Retry-After and X-RateLimit-*)'}
+    skill_level: >-
+      Bad params, listing not found, unknown skill and "No skill invocation found" are returned as an HTTP
+      200 Task with status.state "failed" and the reason in status.message.parts[0].text — observed:
+      "No public listing found for prop-gb-none-00000000." An agent must check status.state, not just the
+      HTTP code or the presence of error.
+  mcp:
+    endpoints: [https://movehome.org/mcp, https://movehome.org/api/registry/mcp]
+    codes:
+    - {code: -32700, meaning: Parse error.}
+    - {code: -32600, meaning: Batch requests are not supported.}
+    - {code: -32602, meaning: 'Unknown tool: <name>'}
+    - {code: -32000, meaning: 'Rate limit exceeded. — HTTP 429'}
+    tool_failures: 'Reported in-band as {content:[{type:text,text:"Tool error: ..."}], isError:true} with HTTP 200 and no JSON-RPC error.'

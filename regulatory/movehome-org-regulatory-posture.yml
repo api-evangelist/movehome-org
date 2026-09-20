@@ -1,0 +1,40 @@
+generated: '2026-09-19'
+method: searched
+probe: true
+source: https://movehome.org/
+signals: {}
+probed:
+- {url: 'https://movehome.org/privacy', status: 404}
+- {url: 'https://movehome.org/privacy-policy', status: 404}
+- {url: 'https://movehome.org/privacy/requests', status: 404}
+- {url: 'https://movehome.org/terms', status: 404}
+- {url: 'https://movehome.org/terms-of-service', status: 404}
+- {url: 'https://movehome.org/legal', status: 404}
+- {url: 'https://movehome.org/legal/subprocessors', status: 404}
+- {url: 'https://movehome.org/legal/dpa', status: 404}
+- {url: 'https://movehome.org/legal/report-content', status: 404}
+- {url: 'https://movehome.org/accessibility', status: 404}
+- {url: 'https://movehome.org/transparency', status: 404}
+- {url: 'https://movehome.org/trust', status: 404}
+- {url: 'https://movehome.org/security', status: 404}
+- {url: 'https://movehome.org/security/sbom', status: 404}
+- {url: 'https://movehome.org/docs/data-residency', status: 404}
+- {url: 'https://movehome.org/ai', status: 404}
+- {url: 'https://movehome.org/ai/transparency', status: 404}
+- {url: 'https://movehome.org/cookies', status: 404}
+- {url: 'https://movehome.org/.well-known/security.txt', status: 404}
+- {url: 'https://movehome.org/about', status: 200, note: 'Describes the aggregator and its open-source posture; no privacy, data-subject, accessibility or AI-disclosure content.'}
+- {url: 'https://github.com/MoveHome/MoveHome.Org', status: 200, note: 'README states "Read-only. Anonymous. No PII." for the aggregator; SECURITY.md absent; no privacy or accessibility documents in the tree.'}
+note: >-
+  MoveHome publishes NO privacy policy, terms of service, cookie notice, accessibility statement,
+  subprocessor list, DPA, data-subject-request channel, transparency report, SBOM or AI-transparency page
+  on movehome.org — every conventional path returns the site's 404 and the homepage/about/registry pages
+  link to none. That is a notable gap for a UK web portal (SIC 63120) that accepts enquirer names, emails
+  and phone numbers through its A2A create_enquiry skill and website form and forwards them to third-party
+  estate agents: the only data-handling statements found are a README line ("Read-only. Anonymous. No
+  PII.", which describes the listing aggregation, not the enquiry pipeline) and the A2A guide's note that
+  enquiries are SSRF-guarded and forwarded to HTTPS public hosts. The one AI-related disclosure is the
+  homepage's plain statement that "AI agents are managing the full transaction" and that the transaction
+  side is handled by a separate company (estateaigents.com); that is marketing copy, not a transparency
+  statement, and is not recorded as a signal. An empty signals map is the measurement; no regime is
+  inferred here — which regimes reach a UK CIC property portal is decided by the Kin Score regime map.

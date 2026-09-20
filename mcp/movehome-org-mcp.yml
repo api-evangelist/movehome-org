@@ -1,0 +1,153 @@
+generated: '2026-09-19'
+method: probed
+status: published
+source: https://movehome.org/mcp
+docs: https://movehome.org/skills.md
+summary: >-
+  MoveHome operates TWO remote MCP servers on its apex host, both stateless Streamable HTTP, both
+  anonymous, both speaking MCP protocol version 2025-06-18 and both answering initialize and tools/list
+  with real inputSchemas. (1) https://movehome.org/mcp — serverInfo {movehome-property, 1.0.0}, two
+  read-only property tools (search_properties, get_property) over the same public RAIA listing mirror the
+  A2A agent reads; the write skill create_enquiry is deliberately NOT exposed here ("Read-only", per the
+  server's own initialize instructions). /api/mcp is the same server (x-nextjs-rewritten-path shows /mcp
+  rewriting to /api/mcp). (2) https://movehome.org/api/registry/mcp — serverInfo {movehome-a2a-registry,
+  1.0.0}, three tools over MoveHome's public registry of real-estate A2A agents (search_agents, get_agent,
+  registry_stats). A GET on either endpoint returns a small JSON descriptor naming the transport and tool
+  list rather than an SSE stream; notifications are acknowledged with 202; batch requests are refused with
+  -32600; resources/list and prompts/list are not implemented. Authorship is knowable from the provider's
+  open-source repository: both servers are src/app/api/mcp/route.ts and src/app/api/registry/mcp/route.ts
+  over a shared src/lib/mcp/http.ts, so this is a provider-built surface and not a platform plugin.
+deployment:
+  mode: remote
+  endpoint: https://movehome.org/mcp
+  auth: none
+  verified: probed
+  note: >-
+    Hosted HTTPS endpoints an MCP client POSTs to directly. MoveHome ships no stdio package and documents no
+    npx/uvx install (npm and PyPI searched 2026-09-19; the only RAIA stdio server is the RAIA Protocol
+    project's own reference implementation at github.com/estateaigents/raia-protocol/mcp, which is a
+    different publisher and points at a different registry). auth is "none" in the connection sense:
+    initialize, tools/list and tools/call need no credential; no OAuth metadata is served on this host
+    (/.well-known/oauth-authorization-server and /.well-known/oauth-protected-resource both 404). The only
+    gate is a per-IP rate limit (60/min) that returns HTTP 429 with JSON-RPC error -32000.
+  additional_endpoints:
+  - https://movehome.org/api/registry/mcp
+servers:
+- id: movehome-property
+  name: MoveHome Property MCP Server
+  endpoint: https://movehome.org/mcp
+  aliases: [https://movehome.org/api/mcp]
+  transport: streamable-http
+  http_methods: [POST, GET, OPTIONS]
+  auth: none
+  status: live
+  read_only: true
+  probe:
+    fetched: '2026-09-19'
+    initialize:
+      http_status: 200
+      protocol_version: '2025-06-18'
+      server_info: {name: movehome-property, version: 1.0.0}
+      capabilities: {tools: {listChanged: false}}
+      instructions: Search and inspect MoveHome.org property listings (UK + international). Read-only.
+    tools_list:
+      http_status: 200
+      content_type: application/json
+      tool_count: 2
+      file: mcp/movehome-org-mcp-tools.json
+    get_request:
+      http_status: 200
+      body: '{"service":"movehome-property","version":"1.0.0","transport":"streamable-http (stateless)","usage":"POST JSON-RPC 2.0 — methods: initialize, tools/list, tools/call","tools":["search_properties","get_property"]}'
+    cors: 'access-control-allow-origin: *; allow-headers Content-Type, Mcp-Session-Id, Mcp-Protocol-Version, Authorization'
+  authorship: provider
+  tools:
+  - name: search_properties
+    category: discovery
+    read_only: true
+    description: Search the MoveHome.org property catalogue by location (UN/LOCODE), service type, property type, bedrooms, and max price.
+    input_schema:
+      un_locode: string — 5-char UN/LOCODE, e.g. GBLON
+      service_type: 'string enum [long_term, short_term, sale]'
+      property_type: 'string enum [flat, house, studio, commercial, land, other]'
+      bedrooms_min: integer >= 0
+      rent_pcm_max: number
+      asking_price_max: number
+      limit: integer 1-50
+    required: []
+    a2a_twin: search_properties
+    note: Narrower than the A2A skill of the same name — the A2A skill also accepts bedrooms_max, features[] and offset (skills.md); the MCP tool has no offset, so it cannot page.
+  - name: get_property
+    category: discovery
+    read_only: true
+    description: Fetch the full public details of one listing by its raia_id (e.g. prop-gb-rlf-000031).
+    input_schema:
+      raia_id: string — Listing id, e.g. prop-gb-rlf-000031
+    required: [raia_id]
+    a2a_twin: get_property
+  not_exposed:
+  - name: create_enquiry
+    reason: The A2A card's only write skill (forwards a real lead to an estate agent). The MCP server describes itself as read-only and does not list it.
+- id: movehome-a2a-registry
+  name: MoveHome A2A Registry MCP Server
+  endpoint: https://movehome.org/api/registry/mcp
+  transport: streamable-http
+  http_methods: [POST, GET, OPTIONS]
+  auth: none
+  status: live
+  read_only: true
+  probe:
+    fetched: '2026-09-19'
+    initialize:
+      http_status: 200
+      protocol_version: '2025-06-18'
+      server_info: {name: movehome-a2a-registry, version: 1.0.0}
+      capabilities: {tools: {listChanged: false}}
+      instructions: Search and inspect the MoveHome public registry of real-estate A2A agents.
+    tools_list:
+      http_status: 200
+      content_type: application/json
+      tool_count: 3
+      file: mcp/movehome-org-registry-mcp-tools.json
+    get_request:
+      http_status: 200
+      body: '{"service":"movehome-a2a-registry","version":"1.0.0","transport":"streamable-http (stateless)","usage":"POST JSON-RPC 2.0 — methods: initialize, tools/list, tools/call","tools":["search_agents","get_agent","registry_stats"]}'
+  authorship: provider
+  tools:
+  - name: search_agents
+    category: registry
+    read_only: true
+    description: Search the registry of real-estate A2A agents by free text, location (UN/LOCODE), service type, or skill id. Returns listed agents.
+    input_schema:
+      q: string — free text (name/description/provider)
+      location: string — UN/LOCODE, e.g. GBLON
+      service_type: 'string enum [long_term, short_term, sale]'
+      skill: string — skill id, e.g. search_properties
+      healthy: boolean — only currently-healthy agents
+      limit: integer 1-50
+    required: []
+    rest_twin: GET /api/registry/v1/agents
+  - name: get_agent
+    category: registry
+    read_only: true
+    description: Get one registered agent by its registry id or slug.
+    input_schema:
+      idOrSlug: string — registry id (uuid) or slug
+    required: [idOrSlug]
+    rest_twin: GET /api/registry/v1/agents/{idOrSlug}
+  - name: registry_stats
+    category: registry
+    read_only: true
+    description: Registry totals and top facets (categories, service types, locations).
+    input_schema: {}
+    required: []
+    rest_twin: GET /api/registry/v1/stats
+protocol_behaviour:
+  json_rpc: '2.0'
+  methods_implemented: [initialize, ping, tools/list, tools/call]
+  notifications: acknowledged with HTTP 202 and no body
+  batch_requests: 'refused with -32600 "Batch requests are not supported."'
+  unknown_tool: '-32602 "Unknown tool: <name>"'
+  tool_failure: 'reported in-band as {content:[{type:text}], isError:true}, not as a JSON-RPC error'
+  rate_limit: 'HTTP 429 with JSON-RPC error -32000 "Rate limit exceeded." (60 requests/min per IP, group a2a for /mcp and registry.read for the registry server)'
+  source: src/lib/mcp/http.ts in github.com/MoveHome/MoveHome.Org (MIT/Apache-2.0)
+tool_count: 5
