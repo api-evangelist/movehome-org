@@ -25,7 +25,7 @@ position: Producing
 created: '2026-09-19'
 modified: '2026-09-19'
 tags:
-- Real Estate
+- Real-Estate
 - Property
 - Lettings
 - Property Sales
@@ -35,7 +35,7 @@ tags:
 - agent-native
 - Agent Registry
 - Non-Profit
-- Open Source
+- Open-Source
 - RAIA Protocol
 - United Kingdom
 tags_raw:
@@ -52,6 +52,8 @@ tags_raw:
 - Open source
 - RAIA Protocol
 - United Kingdom
+- Real Estate
+- Open Source
 apis:
 - aid: movehome-org:movehome-a2a-property-agent
   name: MoveHome.org A2A Property Agent
@@ -67,6 +69,11 @@ apis:
   humanURL: https://movehome.org/skills.md
   baseURL: https://movehome.org/api/a2a
   tags:
+  - A2A
+  - agent-native
+  - Real-Estate
+  - Property
+  tags_raw:
   - A2A
   - agent-native
   - Real Estate
@@ -104,6 +111,10 @@ apis:
   tags:
   - MCP
   - agent-native
+  - Real-Estate
+  tags_raw:
+  - MCP
+  - agent-native
   - Real Estate
   properties:
   - type: MCPServer
@@ -130,6 +141,11 @@ apis:
   humanURL: https://movehome.org/registry
   baseURL: https://movehome.org/api/registry/v1
   tags:
+  - Agent Registry
+  - A2A
+  - MCP
+  - Real-Estate
+  tags_raw:
   - Agent Registry
   - A2A
   - MCP
@@ -161,6 +177,11 @@ apis:
   humanURL: https://github.com/MoveHome/MoveHome.Org/blob/main/docs/raia-portal-feed-api.md
   baseURL: https://movehome.org/api/raia/portal/v1
   tags:
+  - Real-Estate
+  - Property
+  - Listing Syndication
+  - RAIA Protocol
+  tags_raw:
   - Real Estate
   - Property
   - Listing Syndication
