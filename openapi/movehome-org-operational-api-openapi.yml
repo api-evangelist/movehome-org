@@ -1,0 +1,92 @@
+openapi: 3.2.0
+info:
+  title: RAIA Portal Feed Operational API
+  version: 0.1.0
+  summary: Vendor-neutral HTTP contract for syndicating property listings, reconciling branch inventory, polling enquiries, and activating portal products.
+  description: 'The RAIA Portal Feed API gives implementers a single, vendor-neutral contract
+
+    that covers the same jobs-to-be-done as historical UK portal feed
+
+    integrations (Rightmove Real-Time Data Feed, Rightmove Commercial Listings,
+
+    Zoopla Real-Time Listings, and Zoopla Products).'
+  contact:
+    name: RAIA Protocol Working Group
+    email: protocol@estateaigents.org
+    url: https://estateaigents.org
+  license:
+    name: MIT
+    identifier: MIT
+servers:
+- url: https://feed.example.com/api/raia/portal/v1
+  description: Production (implementer-hosted)
+- url: https://staging.feed.example.com/api/raia/portal/v1
+  description: Staging / sandbox (implementer-hosted)
+- url: http://localhost:8787/api/raia/portal/v1
+  description: Local development
+security:
+- OAuth2ClientCredentials:
+  - feed.read
+  - feed.write
+  - products.write
+tags:
+- name: Operational
+  description: Health and metadata.
+paths:
+  /healthz:
+    get:
+      tags:
+      - Operational
+      summary: Service health probe
+      operationId: getHealth
+      security: []
+      responses:
+        '200':
+          description: Service is healthy.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HealthStatus'
+              example:
+                status: OK
+                version: 0.1.0
+                checked_at: '2026-05-28T06:00:00Z'
+components:
+  schemas:
+    HealthStatus:
+      type: object
+      required:
+      - status
+      - version
+      - checked_at
+      properties:
+        status:
+          type: string
+          enum:
+          - OK
+          - DEGRADED
+          - DOWN
+        version:
+          type: string
+          examples:
+          - 0.1.0
+        checked_at:
+          type: string
+          format: date-time
+  securitySchemes:
+    OAuth2ClientCredentials:
+      type: oauth2
+      description: 'Server-to-server OAuth2 client credentials flow. The token endpoint is
+
+        published by the implementer; credentials are issued out-of-band
+
+        during onboarding. Tokens are short-lived Bearer JWTs.
+
+        '
+      flows:
+        clientCredentials:
+          tokenUrl: https://feed.example.com/oauth/token
+          scopes:
+            feed.read: Read listings, branches, performance and enquiries.
+            feed.write: Upsert and remove listings.
+            products.write: Request portal product activations.

@@ -1,0 +1,449 @@
+openapi: 3.2.0
+info:
+  title: RAIA Portal Feed Products API
+  version: 0.1.0
+  summary: Vendor-neutral HTTP contract for syndicating property listings, reconciling branch inventory, polling enquiries, and activating portal products.
+  description: 'The RAIA Portal Feed API gives implementers a single, vendor-neutral contract
+
+    that covers the same jobs-to-be-done as historical UK portal feed
+
+    integrations (Rightmove Real-Time Data Feed, Rightmove Commercial Listings,
+
+    Zoopla Real-Time Listings, and Zoopla Products).'
+  contact:
+    name: RAIA Protocol Working Group
+    email: protocol@estateaigents.org
+    url: https://estateaigents.org
+  license:
+    name: MIT
+    identifier: MIT
+servers:
+- url: https://feed.example.com/api/raia/portal/v1
+  description: Production (implementer-hosted)
+- url: https://staging.feed.example.com/api/raia/portal/v1
+  description: Staging / sandbox (implementer-hosted)
+- url: http://localhost:8787/api/raia/portal/v1
+  description: Local development
+security:
+- OAuth2ClientCredentials:
+  - feed.read
+  - feed.write
+  - products.write
+tags:
+- name: Products
+  description: Portal product activations such as Premium Listings and Featured Properties.
+paths:
+  /products/premium-listings:
+    get:
+      tags:
+      - Products
+      summary: List Premium Listing activations
+      operationId: listPremiumListingActivations
+      security:
+      - OAuth2ClientCredentials:
+        - feed.read
+      parameters:
+      - $ref: '#/components/parameters/PageQuery'
+      - $ref: '#/components/parameters/PerPageQuery'
+      responses:
+        '200':
+          description: Activations page.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProductActivationsPage'
+    post:
+      tags:
+      - Products
+      summary: Request a Premium Listing activation
+      operationId: requestPremiumListingActivation
+      security:
+      - OAuth2ClientCredentials:
+        - products.write
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PremiumListingActivationRequest'
+            example:
+              customer_listing_id: DEMO_20210129_06
+              highlights:
+              - id: 1
+      responses:
+        '201':
+          description: Activation created.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProductActivation'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        5XX:
+          $ref: '#/components/responses/ServerError'
+  /products/premium-listings/{activation_id}:
+    parameters:
+    - $ref: '#/components/parameters/ActivationId'
+    get:
+      tags:
+      - Products
+      summary: Get a Premium Listing activation
+      operationId: getPremiumListingActivation
+      security:
+      - OAuth2ClientCredentials:
+        - feed.read
+      responses:
+        '200':
+          description: Activation found.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProductActivation'
+        '404':
+          $ref: '#/components/responses/NotFound'
+  /products/featured-properties:
+    get:
+      tags:
+      - Products
+      summary: List Featured Property activations
+      operationId: listFeaturedPropertyActivations
+      security:
+      - OAuth2ClientCredentials:
+        - feed.read
+      parameters:
+      - $ref: '#/components/parameters/PageQuery'
+      - $ref: '#/components/parameters/PerPageQuery'
+      responses:
+        '200':
+          description: Activations page.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProductActivationsPage'
+    post:
+      tags:
+      - Products
+      summary: Request a Featured Property activation
+      description: 'Mirrors Zoopla''s Weekly Featured Property product. The downstream
+
+        portal will run the activation for its standard weekly window once
+
+        accepted.'
+      operationId: requestFeaturedPropertyActivation
+      security:
+      - OAuth2ClientCredentials:
+        - products.write
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/FeaturedPropertyActivationRequest'
+            example:
+              customer_listing_id: DEMO_20210202_01
+      responses:
+        '201':
+          description: Activation created.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProductActivation'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        5XX:
+          $ref: '#/components/responses/ServerError'
+  /products/featured-properties/{activation_id}:
+    parameters:
+    - $ref: '#/components/parameters/ActivationId'
+    get:
+      tags:
+      - Products
+      summary: Get a Featured Property activation
+      operationId: getFeaturedPropertyActivation
+      security:
+      - OAuth2ClientCredentials:
+        - feed.read
+      responses:
+        '200':
+          description: Activation found.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProductActivation'
+        '404':
+          $ref: '#/components/responses/NotFound'
+components:
+  schemas:
+    PremiumListingHighlight:
+      type: object
+      required:
+      - id
+      properties:
+        id:
+          type: integer
+          description: 'Highlight identifier. Mirrors Zoopla''s Premium Listing highlight
+
+            ids; implementers SHOULD publish their accepted values as
+
+            additional documentation.
+
+            '
+    PaginationMeta:
+      type: object
+      required:
+      - page
+      - per_page
+      - total
+      properties:
+        page:
+          type: integer
+          minimum: 1
+        per_page:
+          type: integer
+          minimum: 1
+          maximum: 200
+        total:
+          type: integer
+          minimum: 0
+    ProductActivation:
+      type: object
+      required:
+      - id
+      - product
+      - status
+      - created_at
+      properties:
+        id:
+          type: string
+          description: Activation identifier. Mirrors the upstream Zoopla activation `id` UUID.
+        product:
+          type: string
+          enum:
+          - PREMIUM_LISTING
+          - FEATURED_PROPERTY
+        status:
+          $ref: '#/components/schemas/ProductActivationStatus'
+        listing_id:
+          type: integer
+          format: int64
+        customer_listing_id:
+          type: string
+        highlights:
+          type: array
+          items:
+            $ref: '#/components/schemas/PremiumListingHighlight'
+        created_at:
+          type: string
+          format: date-time
+        starts_at:
+          type: string
+          format: date-time
+        ends_at:
+          type: string
+          format: date-time
+        cancellation_reason:
+          type: string
+    ProblemDetail:
+      description: RFC 7807 problem detail. Implementations may add vendor-specific extension members.
+      type: object
+      properties:
+        type:
+          type: string
+          format: uri
+          default: about:blank
+        title:
+          type: string
+        status:
+          type: integer
+          minimum: 100
+          maximum: 599
+        detail:
+          type: string
+        instance:
+          type: string
+          format: uri
+        trace_id:
+          type: string
+        timestamp:
+          type: string
+          format: date-time
+        validation_errors:
+          type: array
+          items:
+            type: object
+            required:
+            - field
+            - message
+            properties:
+              field:
+                type: string
+                examples:
+                - building.location.postcode
+              message:
+                type: string
+              code:
+                type: string
+                examples:
+                - MISSING
+    FeaturedPropertyActivationRequest:
+      type: object
+      description: At least one of `listing_id` or `customer_listing_id` must be supplied.
+      properties:
+        listing_id:
+          type: integer
+          format: int64
+        customer_listing_id:
+          type: string
+      oneOf:
+      - required:
+        - listing_id
+      - required:
+        - customer_listing_id
+    ProductActivationsPage:
+      type: object
+      required:
+      - meta
+      - activations
+      properties:
+        meta:
+          $ref: '#/components/schemas/PaginationMeta'
+        activations:
+          type: array
+          items:
+            $ref: '#/components/schemas/ProductActivation'
+    ProductActivationStatus:
+      type: string
+      enum:
+      - PENDING
+      - ACTIVE
+      - EXPIRED
+      - REJECTED
+      - CANCELLED
+    PremiumListingActivationRequest:
+      type: object
+      description: At least one of `listing_id` or `customer_listing_id` must be supplied.
+      properties:
+        listing_id:
+          type: integer
+          format: int64
+          description: Portal-internal listing id (where known).
+        customer_listing_id:
+          type: string
+          description: The branch's own reference, matching `reference` on `/listings/{reference}`.
+        highlights:
+          type: array
+          items:
+            $ref: '#/components/schemas/PremiumListingHighlight'
+      oneOf:
+      - required:
+        - listing_id
+      - required:
+        - customer_listing_id
+  responses:
+    TooManyRequests:
+      description: Rate limit exceeded. Quotas reset every 60 seconds.
+      headers:
+        Retry-After:
+          schema:
+            type: integer
+            description: Seconds to wait before retrying.
+        X-RateLimit-Limit:
+          schema:
+            type: integer
+        X-RateLimit-Remaining:
+          schema:
+            type: integer
+        X-RateLimit-Reset:
+          schema:
+            type: integer
+            description: Epoch seconds when the quota resets.
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/ProblemDetail'
+    BadRequest:
+      description: Validation error. The body is a `ProblemDetail`.
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/ProblemDetail'
+    NotFound:
+      description: Resource not found.
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/ProblemDetail'
+    Unauthorized:
+      description: Missing or invalid bearer token.
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/ProblemDetail'
+    Forbidden:
+      description: Token is valid but lacks the required scope.
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/ProblemDetail'
+    ServerError:
+      description: Unexpected error.
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/ProblemDetail'
+  parameters:
+    PerPageQuery:
+      name: per_page
+      in: query
+      description: Page size.
+      schema:
+        type: integer
+        minimum: 1
+        maximum: 200
+        default: 50
+    PageQuery:
+      name: page
+      in: query
+      description: Page number (1-indexed).
+      schema:
+        type: integer
+        minimum: 1
+        default: 1
+    ActivationId:
+      name: activation_id
+      in: path
+      required: true
+      description: Identifier of the product activation request.
+      schema:
+        type: string
+        examples:
+        - af2c1c7a-1a13-4a3a-9d6a-9bdc4c5d3df2
+  securitySchemes:
+    OAuth2ClientCredentials:
+      type: oauth2
+      description: 'Server-to-server OAuth2 client credentials flow. The token endpoint is
+
+        published by the implementer; credentials are issued out-of-band
+
+        during onboarding. Tokens are short-lived Bearer JWTs.
+
+        '
+      flows:
+        clientCredentials:
+          tokenUrl: https://feed.example.com/oauth/token
+          scopes:
+            feed.read: Read listings, branches, performance and enquiries.
+            feed.write: Upsert and remove listings.
+            products.write: Request portal product activations.

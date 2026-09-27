@@ -25,17 +25,17 @@ position: Producing
 created: '2026-09-19'
 modified: '2026-09-19'
 tags:
-- Real-Estate
+- Real Estate
 - Property
 - Lettings
 - Property Sales
 - Agents
 - A2A
 - MCP
-- agent-native
+- Agent-Native
 - Agent Registry
 - Non-Profit
-- Open-Source
+- Open Source
 - RAIA Protocol
 - United Kingdom
 tags_raw:
@@ -54,30 +54,34 @@ tags_raw:
 - United Kingdom
 - Real Estate
 - Open Source
+- agent-native
+- Real-Estate
+- Open-Source
 apis:
 - aid: movehome-org:movehome-a2a-property-agent
   name: MoveHome.org A2A Property Agent
   description: >-
     Agent2Agent (A2A 0.3.0) surface: an agent card served from https://movehome.org/.well-known/agent-card.json
-    (and the legacy /.well-known/agent.json, byte-identical) declaring three skills — search_properties and
-    get_property (read-only, anonymous) and create_enquiry (records an enquiry and forwards it to the source
-    estate agent, a real human) — invoked by JSON-RPC 2.0 message/send at https://movehome.org/api/a2a with a
-    single DataPart {skill, params}. Every call returns a terminal Task; skill failures are HTTP 200 Tasks with
-    status.state failed; streaming, push notifications and task persistence are declared unsupported (verified
-    live: -32004 and -32001). Rate limited at 60/min per IP with X-RateLimit-* headers. Listings are RAIA
-    Protocol cards keyed by raia_id and UN/LOCODE.
+    (and the legacy /.well-known/agent.json, byte-identical) declaring three skills — search_properties
+    and get_property (read-only, anonymous) and create_enquiry (records an enquiry and forwards it to
+    the source estate agent, a real human) — invoked by JSON-RPC 2.0 message/send at https://movehome.org/api/a2a
+    with a single DataPart {skill, params}. Every call returns a terminal Task; skill failures are HTTP
+    200 Tasks with status.state failed; streaming, push notifications and task persistence are declared
+    unsupported (verified live: -32004 and -32001). Rate limited at 60/min per IP with X-RateLimit-* headers.
+    Listings are RAIA Protocol cards keyed by raia_id and UN/LOCODE.
   humanURL: https://movehome.org/skills.md
   baseURL: https://movehome.org/api/a2a
   tags:
   - A2A
-  - agent-native
-  - Real-Estate
+  - Agent-Native
+  - Real Estate
   - Property
   tags_raw:
   - A2A
   - agent-native
   - Real Estate
   - Property
+  - Real-Estate
   properties:
   - type: AgentCard
     url: a2a/movehome-org-a2a.yml
@@ -100,22 +104,23 @@ apis:
   name: MoveHome.org Property MCP Server
   description: >-
     Remote Model Context Protocol server at https://movehome.org/mcp (alias /api/mcp): stateless Streamable
-    HTTP, protocol version 2025-06-18, serverInfo movehome-property 1.0.0, anonymous. tools/list answers with
-    two read-only tools carrying real inputSchemas — search_properties (UN/LOCODE, service type, property type,
-    bedrooms, price, limit 1-50) and get_property (raia_id) — over the same public RAIA listing mirror the A2A
-    agent reads; the create_enquiry write is deliberately not exposed ("Read-only", per the server's initialize
-    instructions). A GET returns a JSON descriptor of the transport and tool names; batch requests are refused;
-    rate limit 60/min per IP (429 with JSON-RPC -32000).
+    HTTP, protocol version 2025-06-18, serverInfo movehome-property 1.0.0, anonymous. tools/list answers
+    with two read-only tools carrying real inputSchemas — search_properties (UN/LOCODE, service type,
+    property type, bedrooms, price, limit 1-50) and get_property (raia_id) — over the same public RAIA
+    listing mirror the A2A agent reads; the create_enquiry write is deliberately not exposed ("Read-only",
+    per the server's initialize instructions). A GET returns a JSON descriptor of the transport and tool
+    names; batch requests are refused; rate limit 60/min per IP (429 with JSON-RPC -32000).
   humanURL: https://movehome.org/skills.md
   baseURL: https://movehome.org/mcp
   tags:
   - MCP
-  - agent-native
-  - Real-Estate
+  - Agent-Native
+  - Real Estate
   tags_raw:
   - MCP
   - agent-native
   - Real Estate
+  - Real-Estate
   properties:
   - type: MCPServer
     url: mcp/movehome-org-mcp.yml
@@ -129,27 +134,27 @@ apis:
 - aid: movehome-org:movehome-a2a-registry-api
   name: MoveHome.org A2A Agent Registry API
   description: >-
-    Public registry of real-estate A2A agents operated by MoveHome, exposed two ways. REST under
-    https://movehome.org/api/registry/v1 (no OpenAPI published; anonymous; JSON with RFC 9457 problem details
-    on errors): GET /agents (q, location, service_type, category, skill, healthy, limit, offset), GET
-    /agents/{idOrSlug}, GET /agents/{idOrSlug}/badge (SVG), GET /all, GET /stats, GET /healthz, POST
-    /agents/register {wellKnownURI} (fetches and validates the card; 409 if already listed; 10/min), PUT
-    /agents/{idOrSlug} (re-sync) and POST /agents/{idOrSlug}/flag (5/min). MCP at
-    https://movehome.org/api/registry/mcp (protocol 2025-06-18, serverInfo movehome-a2a-registry 1.0.0) with
-    tools search_agents, get_agent and registry_stats. Two agents were listed on 2026-09-19, including
-    MoveHome's own card.
+    Public registry of real-estate A2A agents operated by MoveHome, exposed two ways. REST under https://movehome.org/api/registry/v1
+    (no OpenAPI published; anonymous; JSON with RFC 9457 problem details on errors): GET /agents (q, location,
+    service_type, category, skill, healthy, limit, offset), GET /agents/{idOrSlug}, GET /agents/{idOrSlug}/badge
+    (SVG), GET /all, GET /stats, GET /healthz, POST /agents/register {wellKnownURI} (fetches and validates
+    the card; 409 if already listed; 10/min), PUT /agents/{idOrSlug} (re-sync) and POST /agents/{idOrSlug}/flag
+    (5/min). MCP at https://movehome.org/api/registry/mcp (protocol 2025-06-18, serverInfo movehome-a2a-registry
+    1.0.0) with tools search_agents, get_agent and registry_stats. Two agents were listed on 2026-09-19,
+    including MoveHome's own card.
   humanURL: https://movehome.org/registry
   baseURL: https://movehome.org/api/registry/v1
   tags:
   - Agent Registry
   - A2A
   - MCP
-  - Real-Estate
+  - Real Estate
   tags_raw:
   - Agent Registry
   - A2A
   - MCP
   - Real Estate
+  - Real-Estate
   properties:
   - type: MCPServer
     name: MoveHome A2A Registry MCP endpoint (Streamable HTTP)
@@ -159,51 +164,77 @@ apis:
   - type: Portal
     name: Registry browser and submit form
     url: https://movehome.org/registry
-- aid: movehome-org:raia-portal-feed-api
-  name: RAIA Portal Feed API (MoveHome.org implementation)
-  description: >-
-    MoveHome's inbound syndication API for CRMs, agencies and partners pushing listings in, at
-    https://movehome.org/api/raia/portal/v1 — an implementation of the RAIA Protocol Working Group's
-    vendor-neutral RAIA Portal Feed API (OpenAPI 3.1.0, 13 operations, MIT). OAuth 2.0 client credentials at
-    https://movehome.org/oauth/token (HS256 JWT, 1 hour, scopes feed.read / feed.write / products.write,
-    credentials issued by the operator). Idempotent PUT/DELETE of listings by the client's own reference
-    (NO_CHANGE on identical re-send), branch inventory reconciliation, 28-day performance reports,
-    cursor-polled enquiries and Premium/Featured product activations; every error is application/problem+json
-    with a trace_id; 60 req/min per credential per endpoint group with X-RateLimit-* and Retry-After.
-    Verified live on 2026-09-19: GET /healthz 200 {"service":"raia-portal-feed-api","version":"0.1.0"};
-    unauthenticated calls 401 with WWW-Authenticate Bearer realm="raia-portal-feed". The saved OpenAPI is the
-    standard's verbatim document (its servers[] and tokenUrl are implementer placeholders); the overlay binds
-    them to MoveHome's live hosts.
-  humanURL: https://github.com/MoveHome/MoveHome.Org/blob/main/docs/raia-portal-feed-api.md
-  baseURL: https://movehome.org/api/raia/portal/v1
+- aid: movehome-org:movehome-org-branches-api
+  name: Move Home Organisation CIC Branches API
+  description: Per-branch reconciliation, performance reporting and enquiry retrieval.
+  humanURL: https://movehome.org/skills.md
+  baseURL: https://movehome.org/api/a2a
   tags:
-  - Real-Estate
-  - Property
-  - Listing Syndication
-  - RAIA Protocol
-  tags_raw:
-  - Real Estate
-  - Property
-  - Listing Syndication
-  - RAIA Protocol
+  - Branches
   properties:
   - type: OpenAPI
-    url: openapi/movehome-org-raia-portal-feed-openapi.yaml
-  - type: OpenAPI
-    name: RAIA Portal Feed API OpenAPI (standard's published contract, RAIA Protocol repository)
-    url: https://raw.githubusercontent.com/estateaigents/raia-protocol/master/openapi/raia-portal-feed-api.yaml
-  - type: Overlay
-    url: overlays/movehome-org-raia-portal-feed-overlay.yaml
+    url: openapi/movehome-org-branches-api-openapi.yml
   - type: Documentation
     url: https://github.com/MoveHome/MoveHome.Org/blob/main/docs/raia-portal-feed-api.md
   - type: APIReference
     url: https://github.com/MoveHome/MoveHome.Org/blob/main/docs/raia-portal-feed-api.md
   - type: OAuthScopes
     url: scopes/movehome-org-scopes.yml
-  - type: AgentSkill
-    url: skills/movehome-org-syndicate-listings.md
   - type: JSONSchema
-    name: RAIA Agent Card schema (the estate-agent discovery document MoveHome aggregates)
+    url: json-schema/movehome-org-raia-agent-card.json
+- aid: movehome-org:movehome-org-listings-api
+  name: Move Home Organisation CIC Listings API
+  description: Upload, update, retrieve and remove residential or commercial listings.
+  humanURL: https://movehome.org/skills.md
+  baseURL: https://movehome.org/api/a2a
+  tags:
+  - Listings
+  properties:
+  - type: OpenAPI
+    url: openapi/movehome-org-listings-api-openapi.yml
+  - type: Documentation
+    url: https://github.com/MoveHome/MoveHome.Org/blob/main/docs/raia-portal-feed-api.md
+  - type: APIReference
+    url: https://github.com/MoveHome/MoveHome.Org/blob/main/docs/raia-portal-feed-api.md
+  - type: OAuthScopes
+    url: scopes/movehome-org-scopes.yml
+  - type: JSONSchema
+    url: json-schema/movehome-org-raia-agent-card.json
+- aid: movehome-org:movehome-org-operational-api
+  name: Move Home Organisation CIC Operational API
+  description: Health and metadata.
+  humanURL: https://movehome.org/skills.md
+  baseURL: https://movehome.org/api/a2a
+  tags:
+  - Operational
+  properties:
+  - type: OpenAPI
+    url: openapi/movehome-org-operational-api-openapi.yml
+  - type: Documentation
+    url: https://github.com/MoveHome/MoveHome.Org/blob/main/docs/raia-portal-feed-api.md
+  - type: APIReference
+    url: https://github.com/MoveHome/MoveHome.Org/blob/main/docs/raia-portal-feed-api.md
+  - type: OAuthScopes
+    url: scopes/movehome-org-scopes.yml
+  - type: JSONSchema
+    url: json-schema/movehome-org-raia-agent-card.json
+- aid: movehome-org:movehome-org-products-api
+  name: Move Home Organisation CIC Products API
+  description: Portal product activations such as Premium Listings and Featured Properties.
+  humanURL: https://movehome.org/skills.md
+  baseURL: https://movehome.org/api/a2a
+  tags:
+  - Products
+  properties:
+  - type: OpenAPI
+    url: openapi/movehome-org-products-api-openapi.yml
+  - type: Documentation
+    url: https://github.com/MoveHome/MoveHome.Org/blob/main/docs/raia-portal-feed-api.md
+  - type: APIReference
+    url: https://github.com/MoveHome/MoveHome.Org/blob/main/docs/raia-portal-feed-api.md
+  - type: OAuthScopes
+    url: scopes/movehome-org-scopes.yml
+  - type: JSONSchema
     url: json-schema/movehome-org-raia-agent-card.json
 maintainers:
 - FN: Kin Lane
@@ -211,6 +242,10 @@ maintainers:
 - FN: APIs.json
   email: info@apis.io
 common:
+- type: Overlay
+  url: overlays/movehome-org-raia-portal-feed-overlay.yaml
+- type: AgentSkill
+  url: skills/movehome-org-syndicate-listings.md
 - type: Website
   url: https://movehome.org/
 - type: Documentation
@@ -277,3 +312,10 @@ x-enrichment:
   status: enriched
   artifacts_added: 32
   pass: local-v3
+x-a2a:
+  verified: true
+  probed: '2026-09-26'
+  url: "https://movehome.org/.well-known/agent-card.json"
+  grade: "conformant"
+  protocol_version: "0.3.0"
+  control: 404

@@ -1,0 +1,22 @@
+{
+  "provider": "movehome-org",
+  "sources": [
+    "movehome-org-raia-portal-feed-openapi.yaml"
+  ],
+  "outputs": [
+    "movehome-org-branches-api-openapi.yml",
+    "movehome-org-listings-api-openapi.yml",
+    "movehome-org-operational-api-openapi.yml",
+    "movehome-org-products-api-openapi.yml"
+  ],
+  "archived": [
+    "archived openapi/movehome-org-raia-portal-feed-openapi.yaml"
+  ],
+  "errors": [],
+  "warnings": [],
+  "notes": [
+    "movehome-org-raia-portal-feed-openapi.yaml: upgraded openapi 3.1.0 -> OpenAPI 3.2.0",
+    "apis.yml register: written (+4 apis, 7 total)"
+  ],
+  "skipped": []
+}

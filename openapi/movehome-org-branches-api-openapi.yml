@@ -1,0 +1,583 @@
+openapi: 3.2.0
+info:
+  title: RAIA Portal Feed Branches API
+  version: 0.1.0
+  summary: Vendor-neutral HTTP contract for syndicating property listings, reconciling branch inventory, polling enquiries, and activating portal products.
+  description: 'The RAIA Portal Feed API gives implementers a single, vendor-neutral contract
+
+    that covers the same jobs-to-be-done as historical UK portal feed
+
+    integrations (Rightmove Real-Time Data Feed, Rightmove Commercial Listings,
+
+    Zoopla Real-Time Listings, and Zoopla Products).'
+  contact:
+    name: RAIA Protocol Working Group
+    email: protocol@estateaigents.org
+    url: https://estateaigents.org
+  license:
+    name: MIT
+    identifier: MIT
+servers:
+- url: https://feed.example.com/api/raia/portal/v1
+  description: Production (implementer-hosted)
+- url: https://staging.feed.example.com/api/raia/portal/v1
+  description: Staging / sandbox (implementer-hosted)
+- url: http://localhost:8787/api/raia/portal/v1
+  description: Local development
+security:
+- OAuth2ClientCredentials:
+  - feed.read
+  - feed.write
+  - products.write
+tags:
+- name: Branches
+  description: Per-branch reconciliation, performance reporting and enquiry retrieval.
+paths:
+  /branches/{branch_id}/listings:
+    parameters:
+    - $ref: '#/components/parameters/BranchId'
+    get:
+      tags:
+      - Branches
+      summary: List a branch's current listings
+      description: 'Returns a paginated snapshot of every listing the branch currently
+
+        publishes to this feed. Use this to reconcile your CRM/MLS against
+
+        what the feed believes is live.'
+      operationId: listBranchListings
+      security:
+      - OAuth2ClientCredentials:
+        - feed.read
+      parameters:
+      - name: transaction_type
+        in: query
+        description: Restrict the response to `SALES` or `LETTINGS` listings.
+        schema:
+          $ref: '#/components/schemas/TransactionType'
+      - name: status
+        in: query
+        description: Restrict to a single lifecycle status.
+        schema:
+          $ref: '#/components/schemas/ListingStatus'
+      - name: updated_since
+        in: query
+        description: Only return listings updated on or after this ISO 8601 timestamp.
+        schema:
+          type: string
+          format: date-time
+      - name: page
+        in: query
+        schema:
+          type: integer
+          minimum: 1
+          default: 1
+      - name: per_page
+        in: query
+        schema:
+          type: integer
+          minimum: 1
+          maximum: 200
+          default: 50
+      responses:
+        '200':
+          description: Reconciliation snapshot.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BranchListingsPage'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        5XX:
+          $ref: '#/components/responses/ServerError'
+  /branches/{branch_id}/performance:
+    parameters:
+    - $ref: '#/components/parameters/BranchId'
+    get:
+      tags:
+      - Branches
+      summary: Branch performance / listing statistics
+      description: 'Returns daily performance metrics for the branch (impressions, detail
+
+        views, click-throughs and enquiry counts). Mirrors the RTDF
+
+        `getbranchperformance` operation: the granularity is per day and per
+
+        portal-recognised listing reference.'
+      operationId: getBranchPerformance
+      security:
+      - OAuth2ClientCredentials:
+        - feed.read
+      parameters:
+      - name: from
+        in: query
+        required: true
+        description: Start date (inclusive). Implementations typically cap the window at 28 days.
+        schema:
+          type: string
+          format: date
+      - name: to
+        in: query
+        required: true
+        description: End date (inclusive). Must be on or after `from`.
+        schema:
+          type: string
+          format: date
+      - name: portal
+        in: query
+        description: Restrict to a single downstream portal/network if the feed implementation syndicates to more than one.
+        schema:
+          type: string
+          examples:
+          - RIGHTMOVE
+          - ZOOPLA
+          - ONTHEMARKET
+      responses:
+        '200':
+          description: Performance report.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BranchPerformanceReport'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        5XX:
+          $ref: '#/components/responses/ServerError'
+  /branches/{branch_id}/enquiries:
+    parameters:
+    - $ref: '#/components/parameters/BranchId'
+    get:
+      tags:
+      - Branches
+      summary: Poll new branch enquiries (leads)
+      description: 'Returns the latest enquiries (leads) raised against listings published
+
+        by this branch. Polling-based to mirror the existing RTDF
+
+        `getbranchemails` and Zoopla FTP enquiry ingestion flows. Use the
+
+        `since_enquiry_id` cursor to avoid duplicates between polls.'
+      operationId: listBranchEnquiries
+      security:
+      - OAuth2ClientCredentials:
+        - feed.read
+      parameters:
+      - name: since_enquiry_id
+        in: query
+        description: Return only enquiries with an `enquiry_id` greater than this cursor.
+        schema:
+          type: string
+      - name: since
+        in: query
+        description: Return enquiries received on or after this timestamp.
+        schema:
+          type: string
+          format: date-time
+      - name: limit
+        in: query
+        schema:
+          type: integer
+          minimum: 1
+          maximum: 500
+          default: 100
+      responses:
+        '200':
+          description: List of enquiries plus the next polling cursor.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BranchEnquiriesPage'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        5XX:
+          $ref: '#/components/responses/ServerError'
+components:
+  schemas:
+    PaginationMeta:
+      type: object
+      required:
+      - page
+      - per_page
+      - total
+      properties:
+        page:
+          type: integer
+          minimum: 1
+        per_page:
+          type: integer
+          minimum: 1
+          maximum: 200
+        total:
+          type: integer
+          minimum: 0
+    ListingStatus:
+      type: string
+      description: Marketing lifecycle status. Mirrors the public RAIA property card statuses plus the commercial-only `UNDER_OFFER`.
+      enum:
+      - AVAILABLE
+      - UNDER_OFFER
+      - SOLD_STC
+      - SOLD_STCM
+      - RESERVED
+      - LET_AGREED
+      - OFF_MARKET
+      - WITHDRAWN
+    BranchListingSummary:
+      type: object
+      required:
+      - reference
+      - transaction_type
+      - status
+      - updated_at
+      properties:
+        reference:
+          type: string
+        transaction_type:
+          $ref: '#/components/schemas/TransactionType'
+        status:
+          $ref: '#/components/schemas/ListingStatus'
+        kind:
+          type: string
+          enum:
+          - residential
+          - commercial
+        public_card_url:
+          type: string
+          format: uri
+        updated_at:
+          type: string
+          format: date-time
+        version:
+          type: integer
+    TransactionType:
+      type: string
+      enum:
+      - SALES
+      - LETTINGS
+    ProblemDetail:
+      description: RFC 7807 problem detail. Implementations may add vendor-specific extension members.
+      type: object
+      properties:
+        type:
+          type: string
+          format: uri
+          default: about:blank
+        title:
+          type: string
+        status:
+          type: integer
+          minimum: 100
+          maximum: 599
+        detail:
+          type: string
+        instance:
+          type: string
+          format: uri
+        trace_id:
+          type: string
+        timestamp:
+          type: string
+          format: date-time
+        validation_errors:
+          type: array
+          items:
+            type: object
+            required:
+            - field
+            - message
+            properties:
+              field:
+                type: string
+                examples:
+                - building.location.postcode
+              message:
+                type: string
+              code:
+                type: string
+                examples:
+                - MISSING
+    BranchPerformanceReport:
+      type: object
+      required:
+      - branch_id
+      - range
+      - totals
+      - by_day
+      properties:
+        branch_id:
+          type: string
+        portal:
+          type: string
+          description: Downstream portal if scoped by the `portal` query parameter.
+        range:
+          type: object
+          required:
+          - from
+          - to
+          properties:
+            from:
+              type: string
+              format: date
+            to:
+              type: string
+              format: date
+        totals:
+          $ref: '#/components/schemas/PerformanceMetrics'
+        by_day:
+          type: array
+          items:
+            type: object
+            required:
+            - date
+            - metrics
+            properties:
+              date:
+                type: string
+                format: date
+              metrics:
+                $ref: '#/components/schemas/PerformanceMetrics'
+        by_property:
+          type: array
+          description: Optional per-listing breakdown.
+          items:
+            type: object
+            required:
+            - reference
+            - metrics
+            properties:
+              reference:
+                type: string
+              metrics:
+                $ref: '#/components/schemas/PerformanceMetrics'
+    BranchEnquiry:
+      type: object
+      required:
+      - enquiry_id
+      - listing_reference
+      - received_at
+      - source
+      - contact
+      description: Lightweight enquiry envelope. Identity payloads remain governed by `schemas/enquiry.json` and ADR-211 access rules.
+      properties:
+        enquiry_id:
+          type: string
+        listing_reference:
+          type: string
+        received_at:
+          type: string
+          format: date-time
+        source:
+          type: string
+          examples:
+          - RIGHTMOVE
+          - ZOOPLA
+          - ONTHEMARKET
+          - WEBSITE
+        message:
+          type: string
+          maxLength: 4000
+        contact:
+          type: object
+          required:
+          - type
+          properties:
+            type:
+              type: string
+              enum:
+              - BUYER_AGENT
+              - INDIVIDUAL
+              - COMPANY
+            buyer_agent_raia_id:
+              type: string
+              description: Present when the lead is brokered by a RAIA-registered buyer agent.
+            name:
+              type: string
+            email:
+              type: string
+              format: email
+            phone:
+              type: string
+            consent_token_ref:
+              type: string
+              description: 'Reference to the consent token authorising the personal-data
+
+                payload. Required when the lead carries L1 or higher personal
+
+                data per `schemas/enquiry.json`.
+
+                '
+        viewing_request:
+          type: object
+          properties:
+            proposed_slots:
+              type: array
+              items:
+                type: object
+                required:
+                - start
+                properties:
+                  start:
+                    type: string
+                    format: date-time
+                  end:
+                    type: string
+                    format: date-time
+            viewing_type:
+              type: string
+              enum:
+              - IN_PERSON
+              - VIRTUAL
+    BranchListingsPage:
+      type: object
+      required:
+      - meta
+      - listings
+      properties:
+        meta:
+          $ref: '#/components/schemas/PaginationMeta'
+        listings:
+          type: array
+          items:
+            $ref: '#/components/schemas/BranchListingSummary'
+    BranchEnquiriesPage:
+      type: object
+      required:
+      - enquiries
+      properties:
+        enquiries:
+          type: array
+          items:
+            $ref: '#/components/schemas/BranchEnquiry'
+        next_cursor:
+          type: string
+          description: 'Opaque cursor to pass back as `since_enquiry_id` on the next poll.
+
+            Absent when there are no more enquiries.
+
+            '
+    PerformanceMetrics:
+      type: object
+      required:
+      - impressions
+      - detail_views
+      - enquiries
+      properties:
+        impressions:
+          type: integer
+          minimum: 0
+        detail_views:
+          type: integer
+          minimum: 0
+        click_throughs:
+          type: integer
+          minimum: 0
+        phone_reveals:
+          type: integer
+          minimum: 0
+        brochure_downloads:
+          type: integer
+          minimum: 0
+        enquiries:
+          type: integer
+          minimum: 0
+  parameters:
+    BranchId:
+      name: branch_id
+      in: path
+      required: true
+      description: Stable identifier of the branch (office) on the feed.
+      schema:
+        oneOf:
+        - type: integer
+          format: int64
+        - type: string
+          pattern: ^[A-Za-z0-9_-]{1,64}$
+  responses:
+    BadRequest:
+      description: Validation error. The body is a `ProblemDetail`.
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/ProblemDetail'
+    NotFound:
+      description: Resource not found.
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/ProblemDetail'
+    Forbidden:
+      description: Token is valid but lacks the required scope.
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/ProblemDetail'
+    Unauthorized:
+      description: Missing or invalid bearer token.
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/ProblemDetail'
+    ServerError:
+      description: Unexpected error.
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/ProblemDetail'
+    TooManyRequests:
+      description: Rate limit exceeded. Quotas reset every 60 seconds.
+      headers:
+        Retry-After:
+          schema:
+            type: integer
+            description: Seconds to wait before retrying.
+        X-RateLimit-Limit:
+          schema:
+            type: integer
+        X-RateLimit-Remaining:
+          schema:
+            type: integer
+        X-RateLimit-Reset:
+          schema:
+            type: integer
+            description: Epoch seconds when the quota resets.
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/ProblemDetail'
+  securitySchemes:
+    OAuth2ClientCredentials:
+      type: oauth2
+      description: 'Server-to-server OAuth2 client credentials flow. The token endpoint is
+
+        published by the implementer; credentials are issued out-of-band
+
+        during onboarding. Tokens are short-lived Bearer JWTs.
+
+        '
+      flows:
+        clientCredentials:
+          tokenUrl: https://feed.example.com/oauth/token
+          scopes:
+            feed.read: Read listings, branches, performance and enquiries.
+            feed.write: Upsert and remove listings.
+            products.write: Request portal product activations.
