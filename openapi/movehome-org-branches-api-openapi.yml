@@ -213,109 +213,22 @@ paths:
           $ref: '#/components/responses/ServerError'
 components:
   schemas:
-    PaginationMeta:
+    BranchEnquiriesPage:
       type: object
       required:
-      - page
-      - per_page
-      - total
+      - enquiries
       properties:
-        page:
-          type: integer
-          minimum: 1
-        per_page:
-          type: integer
-          minimum: 1
-          maximum: 200
-        total:
-          type: integer
-          minimum: 0
-    ListingStatus:
-      type: string
-      description: Marketing lifecycle status. Mirrors the public RAIA property card statuses plus the commercial-only `UNDER_OFFER`.
-      enum:
-      - AVAILABLE
-      - UNDER_OFFER
-      - SOLD_STC
-      - SOLD_STCM
-      - RESERVED
-      - LET_AGREED
-      - OFF_MARKET
-      - WITHDRAWN
-    BranchListingSummary:
-      type: object
-      required:
-      - reference
-      - transaction_type
-      - status
-      - updated_at
-      properties:
-        reference:
-          type: string
-        transaction_type:
-          $ref: '#/components/schemas/TransactionType'
-        status:
-          $ref: '#/components/schemas/ListingStatus'
-        kind:
-          type: string
-          enum:
-          - residential
-          - commercial
-        public_card_url:
-          type: string
-          format: uri
-        updated_at:
-          type: string
-          format: date-time
-        version:
-          type: integer
-    TransactionType:
-      type: string
-      enum:
-      - SALES
-      - LETTINGS
-    ProblemDetail:
-      description: RFC 7807 problem detail. Implementations may add vendor-specific extension members.
-      type: object
-      properties:
-        type:
-          type: string
-          format: uri
-          default: about:blank
-        title:
-          type: string
-        status:
-          type: integer
-          minimum: 100
-          maximum: 599
-        detail:
-          type: string
-        instance:
-          type: string
-          format: uri
-        trace_id:
-          type: string
-        timestamp:
-          type: string
-          format: date-time
-        validation_errors:
+        enquiries:
           type: array
           items:
-            type: object
-            required:
-            - field
-            - message
-            properties:
-              field:
-                type: string
-                examples:
-                - building.location.postcode
-              message:
-                type: string
-              code:
-                type: string
-                examples:
-                - MISSING
+            $ref: '#/components/schemas/BranchEnquiry'
+        next_cursor:
+          type: string
+          description: 'Opaque cursor to pass back as `since_enquiry_id` on the next poll.
+
+            Absent when there are no more enquiries.
+
+            '
     BranchPerformanceReport:
       type: object
       required:
@@ -369,6 +282,146 @@ components:
                 type: string
               metrics:
                 $ref: '#/components/schemas/PerformanceMetrics'
+    BranchListingsPage:
+      type: object
+      required:
+      - meta
+      - listings
+      properties:
+        meta:
+          $ref: '#/components/schemas/PaginationMeta'
+        listings:
+          type: array
+          items:
+            $ref: '#/components/schemas/BranchListingSummary'
+    ListingStatus:
+      type: string
+      description: Marketing lifecycle status. Mirrors the public RAIA property card statuses plus the commercial-only `UNDER_OFFER`.
+      enum:
+      - AVAILABLE
+      - UNDER_OFFER
+      - SOLD_STC
+      - SOLD_STCM
+      - RESERVED
+      - LET_AGREED
+      - OFF_MARKET
+      - WITHDRAWN
+    TransactionType:
+      type: string
+      enum:
+      - SALES
+      - LETTINGS
+    BranchListingSummary:
+      type: object
+      required:
+      - reference
+      - transaction_type
+      - status
+      - updated_at
+      properties:
+        reference:
+          type: string
+        transaction_type:
+          $ref: '#/components/schemas/TransactionType'
+        status:
+          $ref: '#/components/schemas/ListingStatus'
+        kind:
+          type: string
+          enum:
+          - residential
+          - commercial
+        public_card_url:
+          type: string
+          format: uri
+        updated_at:
+          type: string
+          format: date-time
+        version:
+          type: integer
+    PerformanceMetrics:
+      type: object
+      required:
+      - impressions
+      - detail_views
+      - enquiries
+      properties:
+        impressions:
+          type: integer
+          minimum: 0
+        detail_views:
+          type: integer
+          minimum: 0
+        click_throughs:
+          type: integer
+          minimum: 0
+        phone_reveals:
+          type: integer
+          minimum: 0
+        brochure_downloads:
+          type: integer
+          minimum: 0
+        enquiries:
+          type: integer
+          minimum: 0
+    PaginationMeta:
+      type: object
+      required:
+      - page
+      - per_page
+      - total
+      properties:
+        page:
+          type: integer
+          minimum: 1
+        per_page:
+          type: integer
+          minimum: 1
+          maximum: 200
+        total:
+          type: integer
+          minimum: 0
+    ProblemDetail:
+      description: RFC 7807 problem detail. Implementations may add vendor-specific extension members.
+      type: object
+      properties:
+        type:
+          type: string
+          format: uri
+          default: about:blank
+        title:
+          type: string
+        status:
+          type: integer
+          minimum: 100
+          maximum: 599
+        detail:
+          type: string
+        instance:
+          type: string
+          format: uri
+        trace_id:
+          type: string
+        timestamp:
+          type: string
+          format: date-time
+        validation_errors:
+          type: array
+          items:
+            type: object
+            required:
+            - field
+            - message
+            properties:
+              field:
+                type: string
+                examples:
+                - building.location.postcode
+              message:
+                type: string
+              code:
+                type: string
+                examples:
+                - MISSING
     BranchEnquiry:
       type: object
       required:
@@ -447,71 +500,6 @@ components:
               enum:
               - IN_PERSON
               - VIRTUAL
-    BranchListingsPage:
-      type: object
-      required:
-      - meta
-      - listings
-      properties:
-        meta:
-          $ref: '#/components/schemas/PaginationMeta'
-        listings:
-          type: array
-          items:
-            $ref: '#/components/schemas/BranchListingSummary'
-    BranchEnquiriesPage:
-      type: object
-      required:
-      - enquiries
-      properties:
-        enquiries:
-          type: array
-          items:
-            $ref: '#/components/schemas/BranchEnquiry'
-        next_cursor:
-          type: string
-          description: 'Opaque cursor to pass back as `since_enquiry_id` on the next poll.
-
-            Absent when there are no more enquiries.
-
-            '
-    PerformanceMetrics:
-      type: object
-      required:
-      - impressions
-      - detail_views
-      - enquiries
-      properties:
-        impressions:
-          type: integer
-          minimum: 0
-        detail_views:
-          type: integer
-          minimum: 0
-        click_throughs:
-          type: integer
-          minimum: 0
-        phone_reveals:
-          type: integer
-          minimum: 0
-        brochure_downloads:
-          type: integer
-          minimum: 0
-        enquiries:
-          type: integer
-          minimum: 0
-  parameters:
-    BranchId:
-      name: branch_id
-      in: path
-      required: true
-      description: Stable identifier of the branch (office) on the feed.
-      schema:
-        oneOf:
-        - type: integer
-          format: int64
-        - type: string
-          pattern: ^[A-Za-z0-9_-]{1,64}$
   responses:
     BadRequest:
       description: Validation error. The body is a `ProblemDetail`.
@@ -564,6 +552,18 @@ components:
         application/problem+json:
           schema:
             $ref: '#/components/schemas/ProblemDetail'
+  parameters:
+    BranchId:
+      name: branch_id
+      in: path
+      required: true
+      description: Stable identifier of the branch (office) on the feed.
+      schema:
+        oneOf:
+        - type: integer
+          format: int64
+        - type: string
+          pattern: ^[A-Za-z0-9_-]{1,64}$
   securitySchemes:
     OAuth2ClientCredentials:
       type: oauth2

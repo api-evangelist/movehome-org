@@ -186,37 +186,6 @@ paths:
           $ref: '#/components/responses/NotFound'
 components:
   schemas:
-    PremiumListingHighlight:
-      type: object
-      required:
-      - id
-      properties:
-        id:
-          type: integer
-          description: 'Highlight identifier. Mirrors Zoopla''s Premium Listing highlight
-
-            ids; implementers SHOULD publish their accepted values as
-
-            additional documentation.
-
-            '
-    PaginationMeta:
-      type: object
-      required:
-      - page
-      - per_page
-      - total
-      properties:
-        page:
-          type: integer
-          minimum: 1
-        per_page:
-          type: integer
-          minimum: 1
-          maximum: 200
-        total:
-          type: integer
-          minimum: 0
     ProductActivation:
       type: object
       required:
@@ -255,48 +224,20 @@ components:
           format: date-time
         cancellation_reason:
           type: string
-    ProblemDetail:
-      description: RFC 7807 problem detail. Implementations may add vendor-specific extension members.
+    PremiumListingHighlight:
       type: object
+      required:
+      - id
       properties:
-        type:
-          type: string
-          format: uri
-          default: about:blank
-        title:
-          type: string
-        status:
+        id:
           type: integer
-          minimum: 100
-          maximum: 599
-        detail:
-          type: string
-        instance:
-          type: string
-          format: uri
-        trace_id:
-          type: string
-        timestamp:
-          type: string
-          format: date-time
-        validation_errors:
-          type: array
-          items:
-            type: object
-            required:
-            - field
-            - message
-            properties:
-              field:
-                type: string
-                examples:
-                - building.location.postcode
-              message:
-                type: string
-              code:
-                type: string
-                examples:
-                - MISSING
+          description: 'Highlight identifier. Mirrors Zoopla''s Premium Listing highlight
+
+            ids; implementers SHOULD publish their accepted values as
+
+            additional documentation.
+
+            '
     FeaturedPropertyActivationRequest:
       type: object
       description: At least one of `listing_id` or `customer_listing_id` must be supplied.
@@ -351,7 +292,96 @@ components:
         - listing_id
       - required:
         - customer_listing_id
+    PaginationMeta:
+      type: object
+      required:
+      - page
+      - per_page
+      - total
+      properties:
+        page:
+          type: integer
+          minimum: 1
+        per_page:
+          type: integer
+          minimum: 1
+          maximum: 200
+        total:
+          type: integer
+          minimum: 0
+    ProblemDetail:
+      description: RFC 7807 problem detail. Implementations may add vendor-specific extension members.
+      type: object
+      properties:
+        type:
+          type: string
+          format: uri
+          default: about:blank
+        title:
+          type: string
+        status:
+          type: integer
+          minimum: 100
+          maximum: 599
+        detail:
+          type: string
+        instance:
+          type: string
+          format: uri
+        trace_id:
+          type: string
+        timestamp:
+          type: string
+          format: date-time
+        validation_errors:
+          type: array
+          items:
+            type: object
+            required:
+            - field
+            - message
+            properties:
+              field:
+                type: string
+                examples:
+                - building.location.postcode
+              message:
+                type: string
+              code:
+                type: string
+                examples:
+                - MISSING
   responses:
+    BadRequest:
+      description: Validation error. The body is a `ProblemDetail`.
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/ProblemDetail'
+    NotFound:
+      description: Resource not found.
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/ProblemDetail'
+    Forbidden:
+      description: Token is valid but lacks the required scope.
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/ProblemDetail'
+    Unauthorized:
+      description: Missing or invalid bearer token.
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/ProblemDetail'
+    ServerError:
+      description: Unexpected error.
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/ProblemDetail'
     TooManyRequests:
       description: Rate limit exceeded. Quotas reset every 60 seconds.
       headers:
@@ -373,37 +403,15 @@ components:
         application/problem+json:
           schema:
             $ref: '#/components/schemas/ProblemDetail'
-    BadRequest:
-      description: Validation error. The body is a `ProblemDetail`.
-      content:
-        application/problem+json:
-          schema:
-            $ref: '#/components/schemas/ProblemDetail'
-    NotFound:
-      description: Resource not found.
-      content:
-        application/problem+json:
-          schema:
-            $ref: '#/components/schemas/ProblemDetail'
-    Unauthorized:
-      description: Missing or invalid bearer token.
-      content:
-        application/problem+json:
-          schema:
-            $ref: '#/components/schemas/ProblemDetail'
-    Forbidden:
-      description: Token is valid but lacks the required scope.
-      content:
-        application/problem+json:
-          schema:
-            $ref: '#/components/schemas/ProblemDetail'
-    ServerError:
-      description: Unexpected error.
-      content:
-        application/problem+json:
-          schema:
-            $ref: '#/components/schemas/ProblemDetail'
   parameters:
+    PageQuery:
+      name: page
+      in: query
+      description: Page number (1-indexed).
+      schema:
+        type: integer
+        minimum: 1
+        default: 1
     PerPageQuery:
       name: per_page
       in: query
@@ -413,14 +421,6 @@ components:
         minimum: 1
         maximum: 200
         default: 50
-    PageQuery:
-      name: page
-      in: query
-      description: Page number (1-indexed).
-      schema:
-        type: integer
-        minimum: 1
-        default: 1
     ActivationId:
       name: activation_id
       in: path
