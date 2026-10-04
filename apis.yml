@@ -224,6 +224,8 @@ apis:
   humanURL: https://movehome.org/skills.md
   baseURL: https://movehome.org/api/a2a
   tags:
+  - Product
+  tags_raw:
   - Products
   properties:
   - type: OpenAPI
