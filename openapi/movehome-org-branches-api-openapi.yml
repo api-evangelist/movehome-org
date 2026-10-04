@@ -213,215 +213,6 @@ paths:
           $ref: '#/components/responses/ServerError'
 components:
   schemas:
-    BranchEnquiriesPage:
-      type: object
-      required:
-      - enquiries
-      properties:
-        enquiries:
-          type: array
-          items:
-            $ref: '#/components/schemas/BranchEnquiry'
-        next_cursor:
-          type: string
-          description: 'Opaque cursor to pass back as `since_enquiry_id` on the next poll.
-
-            Absent when there are no more enquiries.
-
-            '
-    BranchPerformanceReport:
-      type: object
-      required:
-      - branch_id
-      - range
-      - totals
-      - by_day
-      properties:
-        branch_id:
-          type: string
-        portal:
-          type: string
-          description: Downstream portal if scoped by the `portal` query parameter.
-        range:
-          type: object
-          required:
-          - from
-          - to
-          properties:
-            from:
-              type: string
-              format: date
-            to:
-              type: string
-              format: date
-        totals:
-          $ref: '#/components/schemas/PerformanceMetrics'
-        by_day:
-          type: array
-          items:
-            type: object
-            required:
-            - date
-            - metrics
-            properties:
-              date:
-                type: string
-                format: date
-              metrics:
-                $ref: '#/components/schemas/PerformanceMetrics'
-        by_property:
-          type: array
-          description: Optional per-listing breakdown.
-          items:
-            type: object
-            required:
-            - reference
-            - metrics
-            properties:
-              reference:
-                type: string
-              metrics:
-                $ref: '#/components/schemas/PerformanceMetrics'
-    BranchListingsPage:
-      type: object
-      required:
-      - meta
-      - listings
-      properties:
-        meta:
-          $ref: '#/components/schemas/PaginationMeta'
-        listings:
-          type: array
-          items:
-            $ref: '#/components/schemas/BranchListingSummary'
-    ListingStatus:
-      type: string
-      description: Marketing lifecycle status. Mirrors the public RAIA property card statuses plus the commercial-only `UNDER_OFFER`.
-      enum:
-      - AVAILABLE
-      - UNDER_OFFER
-      - SOLD_STC
-      - SOLD_STCM
-      - RESERVED
-      - LET_AGREED
-      - OFF_MARKET
-      - WITHDRAWN
-    TransactionType:
-      type: string
-      enum:
-      - SALES
-      - LETTINGS
-    BranchListingSummary:
-      type: object
-      required:
-      - reference
-      - transaction_type
-      - status
-      - updated_at
-      properties:
-        reference:
-          type: string
-        transaction_type:
-          $ref: '#/components/schemas/TransactionType'
-        status:
-          $ref: '#/components/schemas/ListingStatus'
-        kind:
-          type: string
-          enum:
-          - residential
-          - commercial
-        public_card_url:
-          type: string
-          format: uri
-        updated_at:
-          type: string
-          format: date-time
-        version:
-          type: integer
-    PerformanceMetrics:
-      type: object
-      required:
-      - impressions
-      - detail_views
-      - enquiries
-      properties:
-        impressions:
-          type: integer
-          minimum: 0
-        detail_views:
-          type: integer
-          minimum: 0
-        click_throughs:
-          type: integer
-          minimum: 0
-        phone_reveals:
-          type: integer
-          minimum: 0
-        brochure_downloads:
-          type: integer
-          minimum: 0
-        enquiries:
-          type: integer
-          minimum: 0
-    PaginationMeta:
-      type: object
-      required:
-      - page
-      - per_page
-      - total
-      properties:
-        page:
-          type: integer
-          minimum: 1
-        per_page:
-          type: integer
-          minimum: 1
-          maximum: 200
-        total:
-          type: integer
-          minimum: 0
-    ProblemDetail:
-      description: RFC 7807 problem detail. Implementations may add vendor-specific extension members.
-      type: object
-      properties:
-        type:
-          type: string
-          format: uri
-          default: about:blank
-        title:
-          type: string
-        status:
-          type: integer
-          minimum: 100
-          maximum: 599
-        detail:
-          type: string
-        instance:
-          type: string
-          format: uri
-        trace_id:
-          type: string
-        timestamp:
-          type: string
-          format: date-time
-        validation_errors:
-          type: array
-          items:
-            type: object
-            required:
-            - field
-            - message
-            properties:
-              field:
-                type: string
-                examples:
-                - building.location.postcode
-              message:
-                type: string
-              code:
-                type: string
-                examples:
-                - MISSING
     BranchEnquiry:
       type: object
       required:
@@ -500,6 +291,215 @@ components:
               enum:
               - IN_PERSON
               - VIRTUAL
+    BranchListingSummary:
+      type: object
+      required:
+      - reference
+      - transaction_type
+      - status
+      - updated_at
+      properties:
+        reference:
+          type: string
+        transaction_type:
+          $ref: '#/components/schemas/TransactionType'
+        status:
+          $ref: '#/components/schemas/ListingStatus'
+        kind:
+          type: string
+          enum:
+          - residential
+          - commercial
+        public_card_url:
+          type: string
+          format: uri
+        updated_at:
+          type: string
+          format: date-time
+        version:
+          type: integer
+    TransactionType:
+      type: string
+      enum:
+      - SALES
+      - LETTINGS
+    PerformanceMetrics:
+      type: object
+      required:
+      - impressions
+      - detail_views
+      - enquiries
+      properties:
+        impressions:
+          type: integer
+          minimum: 0
+        detail_views:
+          type: integer
+          minimum: 0
+        click_throughs:
+          type: integer
+          minimum: 0
+        phone_reveals:
+          type: integer
+          minimum: 0
+        brochure_downloads:
+          type: integer
+          minimum: 0
+        enquiries:
+          type: integer
+          minimum: 0
+    BranchPerformanceReport:
+      type: object
+      required:
+      - branch_id
+      - range
+      - totals
+      - by_day
+      properties:
+        branch_id:
+          type: string
+        portal:
+          type: string
+          description: Downstream portal if scoped by the `portal` query parameter.
+        range:
+          type: object
+          required:
+          - from
+          - to
+          properties:
+            from:
+              type: string
+              format: date
+            to:
+              type: string
+              format: date
+        totals:
+          $ref: '#/components/schemas/PerformanceMetrics'
+        by_day:
+          type: array
+          items:
+            type: object
+            required:
+            - date
+            - metrics
+            properties:
+              date:
+                type: string
+                format: date
+              metrics:
+                $ref: '#/components/schemas/PerformanceMetrics'
+        by_property:
+          type: array
+          description: Optional per-listing breakdown.
+          items:
+            type: object
+            required:
+            - reference
+            - metrics
+            properties:
+              reference:
+                type: string
+              metrics:
+                $ref: '#/components/schemas/PerformanceMetrics'
+    BranchListingsPage:
+      type: object
+      required:
+      - meta
+      - listings
+      properties:
+        meta:
+          $ref: '#/components/schemas/PaginationMeta'
+        listings:
+          type: array
+          items:
+            $ref: '#/components/schemas/BranchListingSummary'
+    PaginationMeta:
+      type: object
+      required:
+      - page
+      - per_page
+      - total
+      properties:
+        page:
+          type: integer
+          minimum: 1
+        per_page:
+          type: integer
+          minimum: 1
+          maximum: 200
+        total:
+          type: integer
+          minimum: 0
+    ListingStatus:
+      type: string
+      description: Marketing lifecycle status. Mirrors the public RAIA property card statuses plus the commercial-only `UNDER_OFFER`.
+      enum:
+      - AVAILABLE
+      - UNDER_OFFER
+      - SOLD_STC
+      - SOLD_STCM
+      - RESERVED
+      - LET_AGREED
+      - OFF_MARKET
+      - WITHDRAWN
+    ProblemDetail:
+      description: RFC 7807 problem detail. Implementations may add vendor-specific extension members.
+      type: object
+      properties:
+        type:
+          type: string
+          format: uri
+          default: about:blank
+        title:
+          type: string
+        status:
+          type: integer
+          minimum: 100
+          maximum: 599
+        detail:
+          type: string
+        instance:
+          type: string
+          format: uri
+        trace_id:
+          type: string
+        timestamp:
+          type: string
+          format: date-time
+        validation_errors:
+          type: array
+          items:
+            type: object
+            required:
+            - field
+            - message
+            properties:
+              field:
+                type: string
+                examples:
+                - building.location.postcode
+              message:
+                type: string
+              code:
+                type: string
+                examples:
+                - MISSING
+    BranchEnquiriesPage:
+      type: object
+      required:
+      - enquiries
+      properties:
+        enquiries:
+          type: array
+          items:
+            $ref: '#/components/schemas/BranchEnquiry'
+        next_cursor:
+          type: string
+          description: 'Opaque cursor to pass back as `since_enquiry_id` on the next poll.
+
+            Absent when there are no more enquiries.
+
+            '
   responses:
     BadRequest:
       description: Validation error. The body is a `ProblemDetail`.
@@ -507,26 +507,8 @@ components:
         application/problem+json:
           schema:
             $ref: '#/components/schemas/ProblemDetail'
-    NotFound:
-      description: Resource not found.
-      content:
-        application/problem+json:
-          schema:
-            $ref: '#/components/schemas/ProblemDetail'
     Forbidden:
       description: Token is valid but lacks the required scope.
-      content:
-        application/problem+json:
-          schema:
-            $ref: '#/components/schemas/ProblemDetail'
-    Unauthorized:
-      description: Missing or invalid bearer token.
-      content:
-        application/problem+json:
-          schema:
-            $ref: '#/components/schemas/ProblemDetail'
-    ServerError:
-      description: Unexpected error.
       content:
         application/problem+json:
           schema:
@@ -548,6 +530,24 @@ components:
           schema:
             type: integer
             description: Epoch seconds when the quota resets.
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/ProblemDetail'
+    NotFound:
+      description: Resource not found.
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/ProblemDetail'
+    ServerError:
+      description: Unexpected error.
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/ProblemDetail'
+    Unauthorized:
+      description: Missing or invalid bearer token.
       content:
         application/problem+json:
           schema:
