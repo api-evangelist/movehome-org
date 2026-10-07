@@ -244,6 +244,8 @@ maintainers:
 - FN: APIs.json
   email: info@apis.io
 common:
+- type: Pricing
+  url: https://movehome.org/
 - type: Overlay
   url: overlays/movehome-org-raia-portal-feed-overlay.yaml
 - type: AgentSkill
