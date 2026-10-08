@@ -45,3 +45,17 @@ plans:
       The Portal Feed API carries two "portal product" activations (Premium Listings, Featured Properties)
       inherited from the RAIA contract; MoveHome publishes no price for either and its README says listing
       is free, so no price is recorded.
+x-canonical:
+  generated: '2026-10-08'
+  vocabulary: all/0-working/economics/plans-canonical.yml
+  models:
+  - free
+  units: []
+  plans:
+  - name: Free (not-for-profit)
+    access: other
+    model: free
+    model_how: derived
+    units: []
+    periods:
+    - other
