@@ -213,6 +213,69 @@ paths:
           $ref: '#/components/responses/ServerError'
 components:
   schemas:
+    BranchEnquiriesPage:
+      type: object
+      required:
+      - enquiries
+      properties:
+        enquiries:
+          type: array
+          items:
+            $ref: '#/components/schemas/BranchEnquiry'
+        next_cursor:
+          type: string
+          description: 'Opaque cursor to pass back as `since_enquiry_id` on the next poll.
+
+            Absent when there are no more enquiries.
+
+            '
+    PaginationMeta:
+      type: object
+      required:
+      - page
+      - per_page
+      - total
+      properties:
+        page:
+          type: integer
+          minimum: 1
+        per_page:
+          type: integer
+          minimum: 1
+          maximum: 200
+        total:
+          type: integer
+          minimum: 0
+    PerformanceMetrics:
+      type: object
+      required:
+      - impressions
+      - detail_views
+      - enquiries
+      properties:
+        impressions:
+          type: integer
+          minimum: 0
+        detail_views:
+          type: integer
+          minimum: 0
+        click_throughs:
+          type: integer
+          minimum: 0
+        phone_reveals:
+          type: integer
+          minimum: 0
+        brochure_downloads:
+          type: integer
+          minimum: 0
+        enquiries:
+          type: integer
+          minimum: 0
+    TransactionType:
+      type: string
+      enum:
+      - SALES
+      - LETTINGS
     BranchEnquiry:
       type: object
       required:
@@ -318,36 +381,6 @@ components:
           format: date-time
         version:
           type: integer
-    TransactionType:
-      type: string
-      enum:
-      - SALES
-      - LETTINGS
-    PerformanceMetrics:
-      type: object
-      required:
-      - impressions
-      - detail_views
-      - enquiries
-      properties:
-        impressions:
-          type: integer
-          minimum: 0
-        detail_views:
-          type: integer
-          minimum: 0
-        click_throughs:
-          type: integer
-          minimum: 0
-        phone_reveals:
-          type: integer
-          minimum: 0
-        brochure_downloads:
-          type: integer
-          minimum: 0
-        enquiries:
-          type: integer
-          minimum: 0
     BranchPerformanceReport:
       type: object
       required:
@@ -413,23 +446,6 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/BranchListingSummary'
-    PaginationMeta:
-      type: object
-      required:
-      - page
-      - per_page
-      - total
-      properties:
-        page:
-          type: integer
-          minimum: 1
-        per_page:
-          type: integer
-          minimum: 1
-          maximum: 200
-        total:
-          type: integer
-          minimum: 0
     ListingStatus:
       type: string
       description: Marketing lifecycle status. Mirrors the public RAIA property card statuses plus the commercial-only `UNDER_OFFER`.
@@ -484,23 +500,13 @@ components:
                 type: string
                 examples:
                 - MISSING
-    BranchEnquiriesPage:
-      type: object
-      required:
-      - enquiries
-      properties:
-        enquiries:
-          type: array
-          items:
-            $ref: '#/components/schemas/BranchEnquiry'
-        next_cursor:
-          type: string
-          description: 'Opaque cursor to pass back as `since_enquiry_id` on the next poll.
-
-            Absent when there are no more enquiries.
-
-            '
   responses:
+    Unauthorized:
+      description: Missing or invalid bearer token.
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/ProblemDetail'
     BadRequest:
       description: Validation error. The body is a `ProblemDetail`.
       content:
@@ -509,6 +515,12 @@ components:
             $ref: '#/components/schemas/ProblemDetail'
     Forbidden:
       description: Token is valid but lacks the required scope.
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/ProblemDetail'
+    ServerError:
+      description: Unexpected error.
       content:
         application/problem+json:
           schema:
@@ -536,18 +548,6 @@ components:
             $ref: '#/components/schemas/ProblemDetail'
     NotFound:
       description: Resource not found.
-      content:
-        application/problem+json:
-          schema:
-            $ref: '#/components/schemas/ProblemDetail'
-    ServerError:
-      description: Unexpected error.
-      content:
-        application/problem+json:
-          schema:
-            $ref: '#/components/schemas/ProblemDetail'
-    Unauthorized:
-      description: Missing or invalid bearer token.
       content:
         application/problem+json:
           schema:

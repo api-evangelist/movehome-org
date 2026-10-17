@@ -185,86 +185,44 @@ paths:
         '404':
           $ref: '#/components/responses/NotFound'
 components:
-  responses:
-    BadRequest:
-      description: Validation error. The body is a `ProblemDetail`.
-      content:
-        application/problem+json:
-          schema:
-            $ref: '#/components/schemas/ProblemDetail'
-    Forbidden:
-      description: Token is valid but lacks the required scope.
-      content:
-        application/problem+json:
-          schema:
-            $ref: '#/components/schemas/ProblemDetail'
-    TooManyRequests:
-      description: Rate limit exceeded. Quotas reset every 60 seconds.
-      headers:
-        Retry-After:
-          schema:
-            type: integer
-            description: Seconds to wait before retrying.
-        X-RateLimit-Limit:
-          schema:
-            type: integer
-        X-RateLimit-Remaining:
-          schema:
-            type: integer
-        X-RateLimit-Reset:
-          schema:
-            type: integer
-            description: Epoch seconds when the quota resets.
-      content:
-        application/problem+json:
-          schema:
-            $ref: '#/components/schemas/ProblemDetail'
-    NotFound:
-      description: Resource not found.
-      content:
-        application/problem+json:
-          schema:
-            $ref: '#/components/schemas/ProblemDetail'
-    ServerError:
-      description: Unexpected error.
-      content:
-        application/problem+json:
-          schema:
-            $ref: '#/components/schemas/ProblemDetail'
-    Unauthorized:
-      description: Missing or invalid bearer token.
-      content:
-        application/problem+json:
-          schema:
-            $ref: '#/components/schemas/ProblemDetail'
-  parameters:
-    ActivationId:
-      name: activation_id
-      in: path
-      required: true
-      description: Identifier of the product activation request.
-      schema:
-        type: string
-        examples:
-        - af2c1c7a-1a13-4a3a-9d6a-9bdc4c5d3df2
-    PageQuery:
-      name: page
-      in: query
-      description: Page number (1-indexed).
-      schema:
-        type: integer
-        minimum: 1
-        default: 1
-    PerPageQuery:
-      name: per_page
-      in: query
-      description: Page size.
-      schema:
-        type: integer
-        minimum: 1
-        maximum: 200
-        default: 50
   schemas:
+    PaginationMeta:
+      type: object
+      required:
+      - page
+      - per_page
+      - total
+      properties:
+        page:
+          type: integer
+          minimum: 1
+        per_page:
+          type: integer
+          minimum: 1
+          maximum: 200
+        total:
+          type: integer
+          minimum: 0
+    ProductActivationStatus:
+      type: string
+      enum:
+      - PENDING
+      - ACTIVE
+      - EXPIRED
+      - REJECTED
+      - CANCELLED
+    ProductActivationsPage:
+      type: object
+      required:
+      - meta
+      - activations
+      properties:
+        meta:
+          $ref: '#/components/schemas/PaginationMeta'
+        activations:
+          type: array
+          items:
+            $ref: '#/components/schemas/ProductActivation'
     FeaturedPropertyActivationRequest:
       type: object
       description: At least one of `listing_id` or `customer_listing_id` must be supplied.
@@ -274,6 +232,26 @@ components:
           format: int64
         customer_listing_id:
           type: string
+      oneOf:
+      - required:
+        - listing_id
+      - required:
+        - customer_listing_id
+    PremiumListingActivationRequest:
+      type: object
+      description: At least one of `listing_id` or `customer_listing_id` must be supplied.
+      properties:
+        listing_id:
+          type: integer
+          format: int64
+          description: Portal-internal listing id (where known).
+        customer_listing_id:
+          type: string
+          description: The branch's own reference, matching `reference` on `/listings/{reference}`.
+        highlights:
+          type: array
+          items:
+            $ref: '#/components/schemas/PremiumListingHighlight'
       oneOf:
       - required:
         - listing_id
@@ -317,35 +295,20 @@ components:
           format: date-time
         cancellation_reason:
           type: string
-    PaginationMeta:
+    PremiumListingHighlight:
       type: object
       required:
-      - page
-      - per_page
-      - total
+      - id
       properties:
-        page:
+        id:
           type: integer
-          minimum: 1
-        per_page:
-          type: integer
-          minimum: 1
-          maximum: 200
-        total:
-          type: integer
-          minimum: 0
-    ProductActivationsPage:
-      type: object
-      required:
-      - meta
-      - activations
-      properties:
-        meta:
-          $ref: '#/components/schemas/PaginationMeta'
-        activations:
-          type: array
-          items:
-            $ref: '#/components/schemas/ProductActivation'
+          description: 'Highlight identifier. Mirrors Zoopla''s Premium Listing highlight
+
+            ids; implementers SHOULD publish their accepted values as
+
+            additional documentation.
+
+            '
     ProblemDetail:
       description: RFC 7807 problem detail. Implementations may add vendor-specific extension members.
       type: object
@@ -388,48 +351,85 @@ components:
                 type: string
                 examples:
                 - MISSING
-    ProductActivationStatus:
-      type: string
-      enum:
-      - PENDING
-      - ACTIVE
-      - EXPIRED
-      - REJECTED
-      - CANCELLED
-    PremiumListingActivationRequest:
-      type: object
-      description: At least one of `listing_id` or `customer_listing_id` must be supplied.
-      properties:
-        listing_id:
-          type: integer
-          format: int64
-          description: Portal-internal listing id (where known).
-        customer_listing_id:
-          type: string
-          description: The branch's own reference, matching `reference` on `/listings/{reference}`.
-        highlights:
-          type: array
-          items:
-            $ref: '#/components/schemas/PremiumListingHighlight'
-      oneOf:
-      - required:
-        - listing_id
-      - required:
-        - customer_listing_id
-    PremiumListingHighlight:
-      type: object
-      required:
-      - id
-      properties:
-        id:
-          type: integer
-          description: 'Highlight identifier. Mirrors Zoopla''s Premium Listing highlight
-
-            ids; implementers SHOULD publish their accepted values as
-
-            additional documentation.
-
-            '
+  responses:
+    Unauthorized:
+      description: Missing or invalid bearer token.
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/ProblemDetail'
+    Forbidden:
+      description: Token is valid but lacks the required scope.
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/ProblemDetail'
+    BadRequest:
+      description: Validation error. The body is a `ProblemDetail`.
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/ProblemDetail'
+    ServerError:
+      description: Unexpected error.
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/ProblemDetail'
+    TooManyRequests:
+      description: Rate limit exceeded. Quotas reset every 60 seconds.
+      headers:
+        Retry-After:
+          schema:
+            type: integer
+            description: Seconds to wait before retrying.
+        X-RateLimit-Limit:
+          schema:
+            type: integer
+        X-RateLimit-Remaining:
+          schema:
+            type: integer
+        X-RateLimit-Reset:
+          schema:
+            type: integer
+            description: Epoch seconds when the quota resets.
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/ProblemDetail'
+    NotFound:
+      description: Resource not found.
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/ProblemDetail'
+  parameters:
+    PageQuery:
+      name: page
+      in: query
+      description: Page number (1-indexed).
+      schema:
+        type: integer
+        minimum: 1
+        default: 1
+    PerPageQuery:
+      name: per_page
+      in: query
+      description: Page size.
+      schema:
+        type: integer
+        minimum: 1
+        maximum: 200
+        default: 50
+    ActivationId:
+      name: activation_id
+      in: path
+      required: true
+      description: Identifier of the product activation request.
+      schema:
+        type: string
+        examples:
+        - af2c1c7a-1a13-4a3a-9d6a-9bdc4c5d3df2
   securitySchemes:
     OAuth2ClientCredentials:
       type: oauth2

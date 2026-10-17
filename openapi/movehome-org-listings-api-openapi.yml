@@ -191,42 +191,117 @@ paths:
           $ref: '#/components/responses/ServerError'
 components:
   schemas:
-    CommercialBuilding:
+    Media:
+      type: object
+      description: Bundles of media for a listing or commercial space.
+      properties:
+        photos:
+          type: array
+          items:
+            $ref: '#/components/schemas/MediaAsset'
+        floor_plans:
+          type: array
+          items:
+            $ref: '#/components/schemas/MediaAsset'
+        epcs:
+          type: array
+          items:
+            $ref: '#/components/schemas/MediaAsset'
+        epc_graphs:
+          type: array
+          items:
+            $ref: '#/components/schemas/MediaAsset'
+        brochures:
+          type: array
+          items:
+            $ref: '#/components/schemas/MediaAsset'
+        virtual_tours:
+          type: array
+          items:
+            $ref: '#/components/schemas/MediaAsset'
+    Furnishing:
+      type: string
+      enum:
+      - FURNISHED
+      - PART_FURNISHED
+      - UNFURNISHED
+      - FURNISHED_OR_UNFURNISHED
+    CommercialSubType:
+      type: string
+      enum:
+      - OFFICE
+      - SERVICED_OFFICE
+      - WAREHOUSE
+      - DISTRIBUTION_WAREHOUSE
+      - FACTORY_MANUFACTURING
+      - SELF_STORAGE
+      - TRADE_COUNTER
+      - INDUSTRIAL_PARK
+      - LIGHT_INDUSTRIAL
+      - HEAVY_INDUSTRIAL
+      - LAND
+      - WOODLAND
+      - FARM
+      - COMMERCIAL_DEVELOPMENT
+      - RESIDENTIAL_DEVELOPMENT
+      - SCIENCE_PARK
+      - RETAIL_HIGH_STREET
+      - RETAIL_OUT_OF_TOWN
+      - RETAIL_PROPERTY_SHOPPING_CENTRE
+      - SHOP
+      - CONVENIENCE_STORE
+      - POST_OFFICE
+      - HOTEL
+      - PUB
+      - RESTAURANT
+      - BAR
+      - CAFE
+      - LEISURE_FACILITY
+      - CAMPSITE_HOLIDAY_VILLAGE
+      - COMM_GUEST_HOUSE
+      - HEALTHCARE_FACILITY
+      - DENTAL_CARE
+      - PHARMACY
+      - CARE_HOME_FACILITY
+      - CHILDCARE_FACILITY
+      - PLACE_OF_WORSHIP
+      - GARAGE
+      - PETROL_STATION
+      - DATA_CENTRE
+      - LIFE_SCIENCES_LABS
+      - AUTOMOTIVE
+      - MIXED_USE
+      - STUDENT_HOUSING
+      - OTHER
+    CommercialSpace:
       type: object
       required:
       - reference
-      - address
+      - name
+      - floor_identifier
+      - sizing
       - status
       - primary_classification
-      description: 'Commercial building. A building may be marketed on its own (BUILDING
-
-        model) or alongside one or more `spaces` (SPACE model). Maximum of
-
-        50 spaces per building, matching the upstream Rightmove Commercial
-
-        limit.
-
-        '
       properties:
         reference:
           type: string
           pattern: ^[A-Za-z0-9_-]{1,100}$
-        address:
-          $ref: '#/components/schemas/Address'
+          description: Unique within the building; must differ from the building reference.
+        name:
+          type: string
+          maxLength: 200
+        floor_identifier:
+          type: string
+          maxLength: 50
+        description:
+          type: string
+          maxLength: 100000
+        sizing:
+          $ref: '#/components/schemas/Sizing'
         status:
           $ref: '#/components/schemas/ListingStatus'
-        published:
-          type: boolean
-          default: true
-        primary_classification:
-          $ref: '#/components/schemas/PropertyClassification'
-        secondary_classifications:
-          type: array
-          items:
-            $ref: '#/components/schemas/PropertyClassification'
-        available_date:
-          type: string
-          format: date
+        pricing:
+          $ref: '#/components/schemas/Pricing'
         let_type:
           type: string
           enum:
@@ -234,13 +309,19 @@ components:
           - SHORT_TERM
           - LONG_TERM
           - FLEXIBLE
-        let_contract_length:
-          type: integer
+        available_date:
+          type: string
+          format: date
         service_charge:
           type: number
         business_rates:
           type: number
+        let_contract_length:
+          type: integer
+          description: Length of rental contract in months. Lettings only.
         rent_all_inclusive:
+          type: boolean
+        published:
           type: boolean
         condition:
           type: string
@@ -248,26 +329,23 @@ components:
           - FULL_FIT_OUT
           - PARTIAL_FIT_OUT
           - SHELL_SPACE
-        sizing:
-          $ref: '#/components/schemas/Sizing'
-        pricing:
-          $ref: '#/components/schemas/Pricing'
-        amenities:
+        primary_classification:
+          $ref: '#/components/schemas/PropertyClassification'
+        secondary_classifications:
+          type: array
+          items:
+            $ref: '#/components/schemas/PropertyClassification'
+        media:
+          $ref: '#/components/schemas/Media'
+        order:
+          type: integer
+          minimum: 0
+        key_features:
           type: array
           items:
             type: string
-          description: Free-form amenity tags such as `WIFI`, `CONCIERGE`, `PARKING`, `AIR_CONDITIONING`.
-        auction:
-          type: boolean
-          default: false
-          description: True if the building is being offered via auction (sales only).
-        media:
-          $ref: '#/components/schemas/Media'
-        spaces:
-          type: array
-          items:
-            $ref: '#/components/schemas/CommercialSpace'
-          maxItems: 50
+            maxLength: 300
+          maxItems: 10
     ListingRemovalRequest:
       type: object
       required:
@@ -287,30 +365,57 @@ components:
         note:
           type: string
           maxLength: 500
-    AsyncAccepted:
+    RemovalReason:
+      type: string
+      description: Why a listing is being removed. Aligned with both Rightmove Commercial removal reasons and the RTDF action set.
+      enum:
+      - SOLD_BY_US
+      - SOLD_BY_ANOTHER_AGENT
+      - LET_BY_US
+      - LET_BY_ANOTHER_AGENT
+      - WITHDRAWN_FROM_MARKET
+      - LOST_INSTRUCTION
+      - REMOVED
+    Listing:
       type: object
       required:
+      - reference
+      - branch_id
+      - transaction_type
       - status
-      - request_id
+      - updated_at
       properties:
+        reference:
+          type: string
+        branch_id:
+          type: string
+          description: Stringified branch identifier for stable JSON consumers.
+        transaction_type:
+          $ref: '#/components/schemas/TransactionType'
         status:
+          $ref: '#/components/schemas/ListingStatus'
+        kind:
           type: string
           enum:
-          - QUEUED
-        request_id:
-          type: string
-          description: Identifier the caller can use to correlate logs.
-        polling_url:
+          - residential
+          - commercial
+        residential:
+          $ref: '#/components/schemas/ResidentialListingInput'
+        commercial:
+          $ref: '#/components/schemas/CommercialListingInput'
+        public_card_url:
           type: string
           format: uri
-          description: Optional URL the caller may poll for the final result.
-    Furnishing:
-      type: string
-      enum:
-      - FURNISHED
-      - PART_FURNISHED
-      - UNFURNISHED
-      - FURNISHED_OR_UNFURNISHED
+          description: URL of the public RAIA property card derived from this listing.
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+        version:
+          type: integer
+          description: Monotonically increasing version. Useful for optimistic concurrency.
     TenureType:
       type: string
       enum:
@@ -403,83 +508,11 @@ components:
             consumers SHOULD honour this when revalidating downloads.
 
             '
-    MeasurementType:
-      type: string
-      enum:
-      - GEA
-      - GIA
-      - NIA
-      - IPMS1
-      - IPMS2
-      - IPMS3_1
-      - IPMS3_2
-    RemovalReason:
-      type: string
-      description: Why a listing is being removed. Aligned with both Rightmove Commercial removal reasons and the RTDF action set.
-      enum:
-      - SOLD_BY_US
-      - SOLD_BY_ANOTHER_AGENT
-      - LET_BY_US
-      - LET_BY_ANOTHER_AGENT
-      - WITHDRAWN_FROM_MARKET
-      - LOST_INSTRUCTION
-      - REMOVED
-    CommercialListingInput:
-      type: object
-      required:
-      - transaction_type
-      - building
-      description: Commercial listing payload.
-      properties:
-        transaction_type:
-          $ref: '#/components/schemas/TransactionType'
-        building:
-          $ref: '#/components/schemas/CommercialBuilding'
-        public_card:
-          $ref: '#/components/schemas/PublicCardProjection'
     TransactionType:
       type: string
       enum:
       - SALES
       - LETTINGS
-    PropertyType:
-      type: string
-      description: Residential property sub-type. Use the `commercial` payload for commercial classifications.
-      enum:
-      - FLAT
-      - APARTMENT
-      - STUDIO
-      - MAISONETTE
-      - TERRACED
-      - END_TERRACE
-      - SEMI_DETACHED
-      - DETACHED
-      - BUNGALOW
-      - COTTAGE
-      - TOWNHOUSE
-      - LAND
-      - OTHER
-    ListingUpsert:
-      oneOf:
-      - $ref: '#/components/schemas/ResidentialListingInput'
-      - $ref: '#/components/schemas/CommercialListingInput'
-      discriminator:
-        propertyName: kind
-        mapping:
-          residential: '#/components/schemas/ResidentialListingInput'
-          commercial: '#/components/schemas/CommercialListingInput'
-    ListingStatus:
-      type: string
-      description: Marketing lifecycle status. Mirrors the public RAIA property card statuses plus the commercial-only `UNDER_OFFER`.
-      enum:
-      - AVAILABLE
-      - UNDER_OFFER
-      - SOLD_STC
-      - SOLD_STCM
-      - RESERVED
-      - LET_AGREED
-      - OFF_MARKET
-      - WITHDRAWN
     CommercialClassification:
       type: string
       description: 'Commercial classification family. The selected sub-type determines
@@ -496,74 +529,180 @@ components:
       - LEISURE_AND_HOSPITALITY
       - LAND_AND_DEVELOPMENT
       - OTHER
-    Media:
+    PropertyClassification:
       type: object
-      description: Bundles of media for a listing or commercial space.
+      required:
+      - classification
+      - sub_type
       properties:
-        photos:
-          type: array
-          items:
-            $ref: '#/components/schemas/MediaAsset'
-        floor_plans:
-          type: array
-          items:
-            $ref: '#/components/schemas/MediaAsset'
-        epcs:
-          type: array
-          items:
-            $ref: '#/components/schemas/MediaAsset'
-        epc_graphs:
-          type: array
-          items:
-            $ref: '#/components/schemas/MediaAsset'
-        brochures:
-          type: array
-          items:
-            $ref: '#/components/schemas/MediaAsset'
-        virtual_tours:
-          type: array
-          items:
-            $ref: '#/components/schemas/MediaAsset'
-    Listing:
+        classification:
+          $ref: '#/components/schemas/CommercialClassification'
+        sub_type:
+          $ref: '#/components/schemas/CommercialSubType'
+    AsyncAccepted:
+      type: object
+      required:
+      - status
+      - request_id
+      properties:
+        status:
+          type: string
+          enum:
+          - QUEUED
+        request_id:
+          type: string
+          description: Identifier the caller can use to correlate logs.
+        polling_url:
+          type: string
+          format: uri
+          description: Optional URL the caller may poll for the final result.
+    CommercialBuilding:
       type: object
       required:
       - reference
-      - branch_id
-      - transaction_type
+      - address
       - status
-      - updated_at
+      - primary_classification
+      description: 'Commercial building. A building may be marketed on its own (BUILDING
+
+        model) or alongside one or more `spaces` (SPACE model). Maximum of
+
+        50 spaces per building, matching the upstream Rightmove Commercial
+
+        limit.
+
+        '
       properties:
         reference:
           type: string
-        branch_id:
-          type: string
-          description: Stringified branch identifier for stable JSON consumers.
-        transaction_type:
-          $ref: '#/components/schemas/TransactionType'
+          pattern: ^[A-Za-z0-9_-]{1,100}$
+        address:
+          $ref: '#/components/schemas/Address'
         status:
           $ref: '#/components/schemas/ListingStatus'
-        kind:
+        published:
+          type: boolean
+          default: true
+        primary_classification:
+          $ref: '#/components/schemas/PropertyClassification'
+        secondary_classifications:
+          type: array
+          items:
+            $ref: '#/components/schemas/PropertyClassification'
+        available_date:
+          type: string
+          format: date
+        let_type:
           type: string
           enum:
-          - residential
-          - commercial
-        residential:
-          $ref: '#/components/schemas/ResidentialListingInput'
-        commercial:
-          $ref: '#/components/schemas/CommercialListingInput'
-        public_card_url:
-          type: string
-          format: uri
-          description: URL of the public RAIA property card derived from this listing.
-        created_at:
-          type: string
-          format: date-time
-        updated_at:
-          type: string
-          format: date-time
-        version:
+          - STANDARD
+          - SHORT_TERM
+          - LONG_TERM
+          - FLEXIBLE
+        let_contract_length:
           type: integer
-          description: Monotonically increasing version. Useful for optimistic concurrency.
+        service_charge:
+          type: number
+        business_rates:
+          type: number
+        rent_all_inclusive:
+          type: boolean
+        condition:
+          type: string
+          enum:
+          - FULL_FIT_OUT
+          - PARTIAL_FIT_OUT
+          - SHELL_SPACE
+        sizing:
+          $ref: '#/components/schemas/Sizing'
+        pricing:
+          $ref: '#/components/schemas/Pricing'
+        amenities:
+          type: array
+          items:
+            type: string
+          description: Free-form amenity tags such as `WIFI`, `CONCIERGE`, `PARKING`, `AIR_CONDITIONING`.
+        auction:
+          type: boolean
+          default: false
+          description: True if the building is being offered via auction (sales only).
+        media:
+          $ref: '#/components/schemas/Media'
+        spaces:
+          type: array
+          items:
+            $ref: '#/components/schemas/CommercialSpace'
+          maxItems: 50
+    PublicCardProjection:
+      type: object
+      description: 'Optional projection that controls how the listing surfaces on the
+
+        public RAIA property card (`schemas/property.json`). When omitted the
+
+        feed implementation derives sensible defaults from the listing.
+
+        '
+      properties:
+        raia_id:
+          type: string
+          pattern: ^prop-[a-z]{2}-[a-z0-9]+-[0-9]+$
+          description: External stable RAIA property identifier.
+        publish:
+          type: boolean
+          default: true
+        max_data_level:
+          type: integer
+          minimum: 0
+          maximum: 3
+          default: 0
+        suppress_address:
+          type: boolean
+          default: true
+          description: When true, the public card only exposes district-level location until COMMITTED.
+    Sizing:
+      type: object
+      properties:
+        size:
+          type: number
+          minimum: 0
+        min_size:
+          type: number
+          minimum: 0
+        max_size:
+          type: number
+          minimum: 0
+        unit:
+          $ref: '#/components/schemas/AreaSizeUnit'
+        measurement_type:
+          $ref: '#/components/schemas/MeasurementType'
+    Pricing:
+      type: object
+      required:
+      - price
+      properties:
+        price:
+          type: number
+          minimum: 0
+        currency:
+          $ref: '#/components/schemas/Currency'
+        display_qualifier:
+          type: string
+          enum:
+          - NONE
+          - PRICE_ON_APPLICATION
+          - GUIDE_PRICE
+          - OFFERS_IN_EXCESS_OF
+          - OFFERS_IN_REGION_OF
+          - FROM
+        frequency:
+          $ref: '#/components/schemas/RentFrequency'
+        rent_obligation:
+          type: string
+          enum:
+          - FULLY_REPAIRING_AND_INSURING
+          - INTERNAL_REPAIRING_AND_INSURING
+          - INTERNAL_REPAIRING_ONLY
+          - NEGOTIABLE
     ListingSaveAction:
       type: object
       required:
@@ -588,19 +727,6 @@ components:
         public_card_url:
           type: string
           format: uri
-    AreaSizeUnit:
-      type: string
-      enum:
-      - SQFT
-      - SQM
-      - ACRES
-      - HECTARES
-    RentFrequency:
-      type: string
-      enum:
-      - MONTHLY
-      - YEARLY
-      - WEEKLY
     ProblemDetail:
       description: RFC 7807 problem detail. Implementations may add vendor-specific extension members.
       type: object
@@ -643,63 +769,42 @@ components:
                 type: string
                 examples:
                 - MISSING
-    PropertyClassification:
-      type: object
-      required:
-      - classification
-      - sub_type
-      properties:
-        classification:
-          $ref: '#/components/schemas/CommercialClassification'
-        sub_type:
-          $ref: '#/components/schemas/CommercialSubType'
-    CommercialSubType:
+    RentFrequency:
       type: string
       enum:
-      - OFFICE
-      - SERVICED_OFFICE
-      - WAREHOUSE
-      - DISTRIBUTION_WAREHOUSE
-      - FACTORY_MANUFACTURING
-      - SELF_STORAGE
-      - TRADE_COUNTER
-      - INDUSTRIAL_PARK
-      - LIGHT_INDUSTRIAL
-      - HEAVY_INDUSTRIAL
+      - MONTHLY
+      - YEARLY
+      - WEEKLY
+    PropertyType:
+      type: string
+      description: Residential property sub-type. Use the `commercial` payload for commercial classifications.
+      enum:
+      - FLAT
+      - APARTMENT
+      - STUDIO
+      - MAISONETTE
+      - TERRACED
+      - END_TERRACE
+      - SEMI_DETACHED
+      - DETACHED
+      - BUNGALOW
+      - COTTAGE
+      - TOWNHOUSE
       - LAND
-      - WOODLAND
-      - FARM
-      - COMMERCIAL_DEVELOPMENT
-      - RESIDENTIAL_DEVELOPMENT
-      - SCIENCE_PARK
-      - RETAIL_HIGH_STREET
-      - RETAIL_OUT_OF_TOWN
-      - RETAIL_PROPERTY_SHOPPING_CENTRE
-      - SHOP
-      - CONVENIENCE_STORE
-      - POST_OFFICE
-      - HOTEL
-      - PUB
-      - RESTAURANT
-      - BAR
-      - CAFE
-      - LEISURE_FACILITY
-      - CAMPSITE_HOLIDAY_VILLAGE
-      - COMM_GUEST_HOUSE
-      - HEALTHCARE_FACILITY
-      - DENTAL_CARE
-      - PHARMACY
-      - CARE_HOME_FACILITY
-      - CHILDCARE_FACILITY
-      - PLACE_OF_WORSHIP
-      - GARAGE
-      - PETROL_STATION
-      - DATA_CENTRE
-      - LIFE_SCIENCES_LABS
-      - AUTOMOTIVE
-      - MIXED_USE
-      - STUDENT_HOUSING
       - OTHER
+    CommercialListingInput:
+      type: object
+      required:
+      - transaction_type
+      - building
+      description: Commercial listing payload.
+      properties:
+        transaction_type:
+          $ref: '#/components/schemas/TransactionType'
+        building:
+          $ref: '#/components/schemas/CommercialBuilding'
+        public_card:
+          $ref: '#/components/schemas/PublicCardProjection'
     ResidentialListingInput:
       type: object
       required:
@@ -805,6 +910,23 @@ components:
           format: date-time
         removal_reason:
           $ref: '#/components/schemas/RemovalReason'
+    MeasurementType:
+      type: string
+      enum:
+      - GEA
+      - GIA
+      - NIA
+      - IPMS1
+      - IPMS2
+      - IPMS3_1
+      - IPMS3_2
+    AreaSizeUnit:
+      type: string
+      enum:
+      - SQFT
+      - SQM
+      - ACRES
+      - HECTARES
     Currency:
       type: string
       description: ISO 4217 currency code.
@@ -815,152 +937,36 @@ components:
       - USD
       - THB
       - SGD
-    Sizing:
-      type: object
-      properties:
-        size:
-          type: number
-          minimum: 0
-        min_size:
-          type: number
-          minimum: 0
-        max_size:
-          type: number
-          minimum: 0
-        unit:
-          $ref: '#/components/schemas/AreaSizeUnit'
-        measurement_type:
-          $ref: '#/components/schemas/MeasurementType'
-    PublicCardProjection:
-      type: object
-      description: 'Optional projection that controls how the listing surfaces on the
-
-        public RAIA property card (`schemas/property.json`). When omitted the
-
-        feed implementation derives sensible defaults from the listing.
-
-        '
-      properties:
-        raia_id:
-          type: string
-          pattern: ^prop-[a-z]{2}-[a-z0-9]+-[0-9]+$
-          description: External stable RAIA property identifier.
-        publish:
-          type: boolean
-          default: true
-        max_data_level:
-          type: integer
-          minimum: 0
-          maximum: 3
-          default: 0
-        suppress_address:
-          type: boolean
-          default: true
-          description: When true, the public card only exposes district-level location until COMMITTED.
-    Pricing:
-      type: object
-      required:
-      - price
-      properties:
-        price:
-          type: number
-          minimum: 0
-        currency:
-          $ref: '#/components/schemas/Currency'
-        display_qualifier:
-          type: string
-          enum:
-          - NONE
-          - PRICE_ON_APPLICATION
-          - GUIDE_PRICE
-          - OFFERS_IN_EXCESS_OF
-          - OFFERS_IN_REGION_OF
-          - FROM
-        frequency:
-          $ref: '#/components/schemas/RentFrequency'
-        rent_obligation:
-          type: string
-          enum:
-          - FULLY_REPAIRING_AND_INSURING
-          - INTERNAL_REPAIRING_AND_INSURING
-          - INTERNAL_REPAIRING_ONLY
-          - NEGOTIABLE
-    CommercialSpace:
-      type: object
-      required:
-      - reference
-      - name
-      - floor_identifier
-      - sizing
-      - status
-      - primary_classification
-      properties:
-        reference:
-          type: string
-          pattern: ^[A-Za-z0-9_-]{1,100}$
-          description: Unique within the building; must differ from the building reference.
-        name:
-          type: string
-          maxLength: 200
-        floor_identifier:
-          type: string
-          maxLength: 50
-        description:
-          type: string
-          maxLength: 100000
-        sizing:
-          $ref: '#/components/schemas/Sizing'
-        status:
-          $ref: '#/components/schemas/ListingStatus'
-        pricing:
-          $ref: '#/components/schemas/Pricing'
-        let_type:
-          type: string
-          enum:
-          - STANDARD
-          - SHORT_TERM
-          - LONG_TERM
-          - FLEXIBLE
-        available_date:
-          type: string
-          format: date
-        service_charge:
-          type: number
-        business_rates:
-          type: number
-        let_contract_length:
-          type: integer
-          description: Length of rental contract in months. Lettings only.
-        rent_all_inclusive:
-          type: boolean
-        published:
-          type: boolean
-        condition:
-          type: string
-          enum:
-          - FULL_FIT_OUT
-          - PARTIAL_FIT_OUT
-          - SHELL_SPACE
-        primary_classification:
-          $ref: '#/components/schemas/PropertyClassification'
-        secondary_classifications:
-          type: array
-          items:
-            $ref: '#/components/schemas/PropertyClassification'
-        media:
-          $ref: '#/components/schemas/Media'
-        order:
-          type: integer
-          minimum: 0
-        key_features:
-          type: array
-          items:
-            type: string
-            maxLength: 300
-          maxItems: 10
+    ListingUpsert:
+      oneOf:
+      - $ref: '#/components/schemas/ResidentialListingInput'
+      - $ref: '#/components/schemas/CommercialListingInput'
+      discriminator:
+        propertyName: kind
+        mapping:
+          residential: '#/components/schemas/ResidentialListingInput'
+          commercial: '#/components/schemas/CommercialListingInput'
+    ListingStatus:
+      type: string
+      description: Marketing lifecycle status. Mirrors the public RAIA property card statuses plus the commercial-only `UNDER_OFFER`.
+      enum:
+      - AVAILABLE
+      - UNDER_OFFER
+      - SOLD_STC
+      - SOLD_STCM
+      - RESERVED
+      - LET_AGREED
+      - OFF_MARKET
+      - WITHDRAWN
   responses:
     BadRequest:
       description: Validation error. The body is a `ProblemDetail`.
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/ProblemDetail'
+    Forbidden:
+      description: Token is valid but lacks the required scope.
       content:
         application/problem+json:
           schema:
@@ -977,8 +983,8 @@ components:
         application/problem+json:
           schema:
             $ref: '#/components/schemas/ProblemDetail'
-    Forbidden:
-      description: Token is valid but lacks the required scope.
+    ServerError:
+      description: Unexpected error.
       content:
         application/problem+json:
           schema:
@@ -1004,41 +1010,6 @@ components:
         application/problem+json:
           schema:
             $ref: '#/components/schemas/ProblemDetail'
-    ServerError:
-      description: Unexpected error.
-      content:
-        application/problem+json:
-          schema:
-            $ref: '#/components/schemas/ProblemDetail'
-  parameters:
-    BranchIdHeader:
-      name: X-RAIA-Branch-Id
-      in: header
-      required: false
-      description: 'Optional branch context for the read. When omitted the response is
-
-        scoped to all branches the caller''s credentials grant access to.
-
-        '
-      schema:
-        type: string
-    ListingReference:
-      name: reference
-      in: path
-      required: true
-      description: 'Customer-controlled listing reference. Must be unique per branch. For
-
-        commercial properties with spaces, this is the building reference;
-
-        each space carries its own reference inside the payload.
-
-        '
-      schema:
-        type: string
-        pattern: ^[A-Za-z0-9_-]{1,100}$
-        examples:
-        - REF_001
-        - BLD_LON_001
   examples:
     CommercialBuildingUpsert:
       summary: Commercial building with one space
@@ -1134,6 +1105,35 @@ components:
           publish: true
           max_data_level: 3
           suppress_address: true
+  parameters:
+    BranchIdHeader:
+      name: X-RAIA-Branch-Id
+      in: header
+      required: false
+      description: 'Optional branch context for the read. When omitted the response is
+
+        scoped to all branches the caller''s credentials grant access to.
+
+        '
+      schema:
+        type: string
+    ListingReference:
+      name: reference
+      in: path
+      required: true
+      description: 'Customer-controlled listing reference. Must be unique per branch. For
+
+        commercial properties with spaces, this is the building reference;
+
+        each space carries its own reference inside the payload.
+
+        '
+      schema:
+        type: string
+        pattern: ^[A-Za-z0-9_-]{1,100}$
+        examples:
+        - REF_001
+        - BLD_LON_001
   securitySchemes:
     OAuth2ClientCredentials:
       type: oauth2
