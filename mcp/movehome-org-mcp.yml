@@ -177,7 +177,7 @@ protocol_behaviour:
   rate_limit: HTTP 429 with JSON-RPC error -32000 "Rate limit exceeded." (60 requests/min per IP, group
     a2a for /mcp and registry.read for the registry server)
   source: src/lib/mcp/http.ts in github.com/MoveHome/MoveHome.Org (MIT/Apache-2.0)
-tool_count: 5
+tool_count: 2
 tool_quality:
   tool_count: 3
   tokens_total: 285
@@ -203,3 +203,10 @@ tool_quality:
   scored: false
   note: Facts from the saved tools/list capture (mcp_tool_quality.py); recorded, not scored. Checks learned
     from Glimind's agent-readiness audit.
+tools:
+- name: search_properties
+  description: Search the MoveHome.org property catalogue by location (UN/LOCODE), service type, property
+    type, bedrooms, and max price.
+- name: get_property
+  description: Fetch the full public details of one listing by its raia_id (e.g. prop-gb-rlf-000031).
+tools_count: 2
