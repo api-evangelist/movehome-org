@@ -1,5 +1,7 @@
 aid: movehome-org
+
 name: Move Home Organisation CIC
+
 description: >-
   Move Home Organisation CIC (Companies House 17202438, incorporated 6 May 2026, Poole, England) is an
   asset-locked UK Community Interest Company that runs MoveHome.org, a free, not-for-profit property
@@ -14,16 +16,27 @@ description: >-
   implementation of the RAIA Portal Feed API (OpenAPI 3.1.0, 13 operations, RFC 9457 problem details) at
   https://movehome.org/api/raia/portal/v1. The site publishes an llms.txt/skills.md for agents but no
   privacy policy, terms, status page, changelog, SDK or pricing page.
+
 image: https://movehome.org/branding/icon.png
+
 url: https://raw.githubusercontent.com/api-evangelist/movehome-org/refs/heads/main/apis.yml
+
 x-type: company
+
 x-source: harvest:a2a-registry
+
 x-tier: profiled
+
 x-tier-reason: enrichment pass 2026-09-19 (local-v3; was a2a-registry harvest stub)
+
 specificationVersion: '0.20'
+
 position: Producing
+
 created: '2026-09-19'
-modified: '2026-09-19'
+
+modified: '2026-10-20'
+
 tags:
 - Real Estate
 - Property
@@ -38,6 +51,7 @@ tags:
 - Open Source
 - RAIA Protocol
 - United Kingdom
+
 tags_raw:
 - Real estate
 - Property
@@ -57,6 +71,90 @@ tags_raw:
 - agent-native
 - Real-Estate
 - Open-Source
+
+maintainers:
+- FN: Kin Lane
+  email: kin@apievangelist.com
+- FN: APIs.json
+  email: info@apis.io
+
+common:
+- type: Spectral
+  url: rules/movehome-org-rules.yml
+- type: JSONLD
+  url: json-ld/movehome-org-context.jsonld
+- type: Vocabulary
+  url: vocabulary/movehome-org-vocabulary.yml
+- type: Hosts
+  url: hosts/movehome-org-hosts.yml
+- type: IntegrationEdges
+  url: integrations/movehome-org-integration-edges.yml
+- type: Vendors
+  url: vendors/movehome-org-vendors.yml
+- type: Overlay
+  url: overlays/movehome-org-raia-portal-feed-overlay.yaml
+- type: AgentSkill
+  url: skills/movehome-org-syndicate-listings.md
+- type: Website
+  url: https://movehome.org/
+- type: Documentation
+  url: https://movehome.org/skills.md
+- type: APIReference
+  url: https://github.com/MoveHome/MoveHome.Org/tree/main/docs
+- type: GettingStarted
+  url: https://movehome.org/skills.md
+- type: GitHubOrganization
+  url: https://github.com/MoveHome
+- type: SourceCode
+  url: https://github.com/MoveHome/MoveHome.Org
+- type: Support
+  url: https://github.com/MoveHome/MoveHome.Org/issues
+- type: About
+  url: https://movehome.org/about
+- type: License
+  name: Apache-2.0 (site source); RAIA Protocol contracts MIT
+  url: https://github.com/MoveHome/MoveHome.Org/blob/main/LICENSE
+- type: AgentCard
+  url: a2a/movehome-org-a2a.yml
+- type: MCPServer
+  url: mcp/movehome-org-mcp.yml
+- type: ToolCrosswalk
+  url: mcp/movehome-org-tool-crosswalk.yml
+- type: WellKnown
+  url: well-known/movehome-org-well-known.yml
+- type: LLMsTxt
+  url: llms/movehome-org-llms.txt
+- type: AgentSkill
+  url: skills/_index.yml
+- type: AgenticAccess
+  url: agentic-access/movehome-org-agentic-access.yml
+- type: Authentication
+  url: authentication/movehome-org-authentication.yml
+- type: OAuthScopes
+  url: scopes/movehome-org-scopes.yml
+- type: Conventions
+  url: conventions/movehome-org-conventions.yml
+- type: Idempotency
+  url: conventions/movehome-org-conventions.yml
+- type: ErrorCatalog
+  url: errors/movehome-org-problem-types.yml
+- type: RateLimits
+  url: rate-limits/movehome-org-rate-limits.yml
+- type: Plans
+  url: plans/movehome-org-plans-pricing.yml
+- type: Lifecycle
+  url: lifecycle/movehome-org-lifecycle.yml
+- type: Conformance
+  url: conformance/movehome-org-conformance.yml
+- type: DataModel
+  url: data-model/movehome-org-data-model.yml
+- type: Webhooks
+  url: asyncapi/movehome-org-webhooks.yml
+- type: RegulatoryPosture
+  url: regulatory/movehome-org-regulatory-posture.yml
+- type: DomainSecurity
+  url: security/movehome-org-domain-security.yml
+
 apis:
 - aid: movehome-org:movehome-a2a-property-agent
   name: MoveHome.org A2A Property Agent
@@ -168,7 +266,7 @@ apis:
   name: Move Home Organisation CIC Branches API
   description: Per-branch reconciliation, performance reporting and enquiry retrieval.
   humanURL: https://movehome.org/skills.md
-  baseURL: https://movehome.org/api/a2a
+  baseURL: https://movehome.org/api/raia/portal/v1
   tags:
   - Branches
   properties:
@@ -186,7 +284,7 @@ apis:
   name: Move Home Organisation CIC Listings API
   description: Upload, update, retrieve and remove residential or commercial listings.
   humanURL: https://movehome.org/skills.md
-  baseURL: https://movehome.org/api/a2a
+  baseURL: https://movehome.org/api/raia/portal/v1
   tags:
   - Listings
   properties:
@@ -204,7 +302,7 @@ apis:
   name: Move Home Organisation CIC Operational API
   description: Health and metadata.
   humanURL: https://movehome.org/skills.md
-  baseURL: https://movehome.org/api/a2a
+  baseURL: https://movehome.org/api/raia/portal/v1
   tags:
   - Operational
   properties:
@@ -222,7 +320,7 @@ apis:
   name: Move Home Organisation CIC Products API
   description: Portal product activations such as Premium Listings and Featured Properties.
   humanURL: https://movehome.org/skills.md
-  baseURL: https://movehome.org/api/a2a
+  baseURL: https://movehome.org/api/raia/portal/v1
   tags:
   - Product
   tags_raw:
@@ -238,84 +336,13 @@ apis:
     url: scopes/movehome-org-scopes.yml
   - type: JSONSchema
     url: json-schema/movehome-org-raia-agent-card.json
-maintainers:
-- FN: Kin Lane
-  email: kin@apievangelist.com
-- FN: APIs.json
-  email: info@apis.io
-common:
-- type: Pricing
-  url: https://movehome.org/
-- type: Overlay
-  url: overlays/movehome-org-raia-portal-feed-overlay.yaml
-- type: AgentSkill
-  url: skills/movehome-org-syndicate-listings.md
-- type: Website
-  url: https://movehome.org/
-- type: Documentation
-  url: https://movehome.org/skills.md
-- type: APIReference
-  url: https://github.com/MoveHome/MoveHome.Org/tree/main/docs
-- type: GettingStarted
-  url: https://movehome.org/skills.md
-- type: GitHubOrganization
-  url: https://github.com/MoveHome
-- type: SourceCode
-  url: https://github.com/MoveHome/MoveHome.Org
-- type: Support
-  url: https://github.com/MoveHome/MoveHome.Org/issues
-- type: About
-  url: https://movehome.org/about
-- type: License
-  name: Apache-2.0 (site source); RAIA Protocol contracts MIT
-  url: https://github.com/MoveHome/MoveHome.Org/blob/main/LICENSE
-- type: AgentCard
-  url: a2a/movehome-org-a2a.yml
-- type: MCPServer
-  url: mcp/movehome-org-mcp.yml
-- type: ToolCrosswalk
-  url: mcp/movehome-org-tool-crosswalk.yml
-- type: WellKnown
-  url: well-known/movehome-org-well-known.yml
-- type: LLMsTxt
-  url: llms/movehome-org-llms.txt
-- type: AgentSkill
-  url: skills/_index.yml
-- type: AgenticAccess
-  url: agentic-access/movehome-org-agentic-access.yml
-- type: Authentication
-  url: authentication/movehome-org-authentication.yml
-- type: OAuthScopes
-  url: scopes/movehome-org-scopes.yml
-- type: Conventions
-  url: conventions/movehome-org-conventions.yml
-- type: Idempotency
-  url: conventions/movehome-org-conventions.yml
-- type: ErrorCatalog
-  url: errors/movehome-org-problem-types.yml
-- type: RateLimits
-  url: rate-limits/movehome-org-rate-limits.yml
-- type: Plans
-  url: plans/movehome-org-plans-pricing.yml
-- type: Lifecycle
-  url: lifecycle/movehome-org-lifecycle.yml
-- type: Conformance
-  url: conformance/movehome-org-conformance.yml
-- type: DataModel
-  url: data-model/movehome-org-data-model.yml
-- type: Webhooks
-  url: asyncapi/movehome-org-webhooks.yml
-- type: Packages
-  url: packages/movehome-org-packages.yml
-- type: RegulatoryPosture
-  url: regulatory/movehome-org-regulatory-posture.yml
-- type: DomainSecurity
-  url: security/movehome-org-domain-security.yml
+
 x-enrichment:
-  date: '2026-09-19'
+  date: '2026-10-20'
   status: enriched
-  artifacts_added: 32
-  pass: local-v3
+  artifacts_added: 0
+  pass: local-v5
+
 x-a2a:
   verified: true
   probed: '2026-09-26'

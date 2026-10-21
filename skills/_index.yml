@@ -2,12 +2,12 @@ generated: '2026-09-19'
 method: searched
 source: >-
   https://movehome.org/skills.md — the provider's own agent-facing skills document (the agent card's
-  documentationUrl; byte-identical to /llms.txt), saved verbatim as movehome-org-skills.md. The two
+  documentationUrl; byte-identical to /llms.txt), saved verbatim as llms/movehome-org-skills.md. The two
   generated skills are grounded in the live agent card / MCP tools/list (skill and tool names verified
   against a2a/movehome-org-agent-card.json and mcp/movehome-org-mcp-tools.json) and in the RAIA Portal
   Feed API OpenAPI (every operationId verified against openapi/movehome-org-raia-portal-feed-openapi.yaml).
 skills:
-- file: movehome-org-skills.md
+- file: ../llms/movehome-org-skills.md
   name: MoveHome.org — A2A Agent Skills (for AI agents)
   method: searched
   source: https://movehome.org/skills.md

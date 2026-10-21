@@ -1,0 +1,602 @@
+{
+  "@context": {
+    "@vocab": "https://movehome.org/schema#",
+    "schema": "https://schema.org/",
+    "xsd": "http://www.w3.org/2001/XMLSchema#",
+    "dcterms": "http://purl.org/dc/terms/",
+    "movehome": "https://movehome.org/schema#",
+    "BranchEnquiriesPage": "movehome:BranchEnquiriesPage",
+    "enquiries": {
+      "@id": "movehome:enquiries",
+      "@container": "@list"
+    },
+    "next_cursor": {
+      "@id": "movehome:next_cursor",
+      "@type": "xsd:string"
+    },
+    "PaginationMeta": "movehome:PaginationMeta",
+    "page": {
+      "@id": "movehome:page",
+      "@type": "xsd:integer"
+    },
+    "per_page": {
+      "@id": "movehome:per_page",
+      "@type": "xsd:integer"
+    },
+    "total": {
+      "@id": "movehome:total",
+      "@type": "xsd:integer"
+    },
+    "PerformanceMetrics": "movehome:PerformanceMetrics",
+    "impressions": {
+      "@id": "movehome:impressions",
+      "@type": "xsd:integer"
+    },
+    "detail_views": {
+      "@id": "movehome:detail_views",
+      "@type": "xsd:integer"
+    },
+    "click_throughs": {
+      "@id": "movehome:click_throughs",
+      "@type": "xsd:integer"
+    },
+    "phone_reveals": {
+      "@id": "movehome:phone_reveals",
+      "@type": "xsd:integer"
+    },
+    "brochure_downloads": {
+      "@id": "movehome:brochure_downloads",
+      "@type": "xsd:integer"
+    },
+    "TransactionType": "movehome:TransactionType",
+    "BranchEnquiry": "movehome:BranchEnquiry",
+    "enquiry_id": {
+      "@id": "movehome:enquiry_id",
+      "@type": "xsd:string"
+    },
+    "listing_reference": {
+      "@id": "movehome:listing_reference",
+      "@type": "xsd:string"
+    },
+    "received_at": {
+      "@id": "movehome:received_at",
+      "@type": "xsd:dateTime"
+    },
+    "source": {
+      "@id": "movehome:source",
+      "@type": "xsd:string"
+    },
+    "message": {
+      "@id": "movehome:message",
+      "@type": "xsd:string"
+    },
+    "contact": {
+      "@id": "movehome:contact"
+    },
+    "viewing_request": {
+      "@id": "movehome:viewing_request"
+    },
+    "BranchListingSummary": "movehome:BranchListingSummary",
+    "reference": {
+      "@id": "movehome:reference",
+      "@type": "xsd:string"
+    },
+    "transaction_type": {
+      "@id": "movehome:transaction_type",
+      "@type": "@id"
+    },
+    "status": {
+      "@id": "movehome:status",
+      "@type": "@id"
+    },
+    "kind": {
+      "@id": "movehome:kind",
+      "@type": "xsd:string"
+    },
+    "public_card_url": {
+      "@id": "movehome:public_card_url",
+      "@type": "@id"
+    },
+    "updated_at": {
+      "@id": "movehome:updated_at",
+      "@type": "xsd:dateTime"
+    },
+    "version": {
+      "@id": "movehome:version",
+      "@type": "xsd:integer"
+    },
+    "BranchPerformanceReport": "movehome:BranchPerformanceReport",
+    "branch_id": {
+      "@id": "movehome:branch_id",
+      "@type": "xsd:string"
+    },
+    "portal": {
+      "@id": "movehome:portal",
+      "@type": "xsd:string"
+    },
+    "range": {
+      "@id": "movehome:range"
+    },
+    "totals": {
+      "@id": "movehome:totals",
+      "@type": "@id"
+    },
+    "by_day": {
+      "@id": "movehome:by_day",
+      "@container": "@list"
+    },
+    "by_property": {
+      "@id": "movehome:by_property",
+      "@container": "@list"
+    },
+    "BranchListingsPage": "movehome:BranchListingsPage",
+    "meta": {
+      "@id": "movehome:meta",
+      "@type": "@id"
+    },
+    "listings": {
+      "@id": "movehome:listings",
+      "@container": "@list"
+    },
+    "ListingStatus": "movehome:ListingStatus",
+    "ProblemDetail": "movehome:ProblemDetail",
+    "type": {
+      "@id": "movehome:type",
+      "@type": "@id"
+    },
+    "title": {
+      "@id": "movehome:title",
+      "@type": "xsd:string"
+    },
+    "detail": {
+      "@id": "movehome:detail",
+      "@type": "xsd:string"
+    },
+    "instance": {
+      "@id": "movehome:instance",
+      "@type": "@id"
+    },
+    "trace_id": {
+      "@id": "movehome:trace_id",
+      "@type": "xsd:string"
+    },
+    "timestamp": {
+      "@id": "movehome:timestamp",
+      "@type": "xsd:dateTime"
+    },
+    "validation_errors": {
+      "@id": "movehome:validation_errors",
+      "@container": "@list"
+    },
+    "Media": "movehome:Media",
+    "photos": {
+      "@id": "movehome:photos",
+      "@container": "@list"
+    },
+    "floor_plans": {
+      "@id": "movehome:floor_plans",
+      "@container": "@list"
+    },
+    "epcs": {
+      "@id": "movehome:epcs",
+      "@container": "@list"
+    },
+    "epc_graphs": {
+      "@id": "movehome:epc_graphs",
+      "@container": "@list"
+    },
+    "brochures": {
+      "@id": "movehome:brochures",
+      "@container": "@list"
+    },
+    "virtual_tours": {
+      "@id": "movehome:virtual_tours",
+      "@container": "@list"
+    },
+    "Furnishing": "movehome:Furnishing",
+    "CommercialSubType": "movehome:CommercialSubType",
+    "CommercialSpace": "movehome:CommercialSpace",
+    "name": {
+      "@id": "movehome:name",
+      "@type": "xsd:string"
+    },
+    "floor_identifier": {
+      "@id": "movehome:floor_identifier",
+      "@type": "xsd:string"
+    },
+    "description": {
+      "@id": "movehome:description",
+      "@type": "xsd:string"
+    },
+    "sizing": {
+      "@id": "movehome:sizing",
+      "@type": "@id"
+    },
+    "pricing": {
+      "@id": "movehome:pricing",
+      "@type": "@id"
+    },
+    "let_type": {
+      "@id": "movehome:let_type",
+      "@type": "xsd:string"
+    },
+    "available_date": {
+      "@id": "movehome:available_date",
+      "@type": "xsd:date"
+    },
+    "service_charge": {
+      "@id": "movehome:service_charge",
+      "@type": "xsd:decimal"
+    },
+    "business_rates": {
+      "@id": "movehome:business_rates",
+      "@type": "xsd:decimal"
+    },
+    "let_contract_length": {
+      "@id": "movehome:let_contract_length",
+      "@type": "xsd:integer"
+    },
+    "rent_all_inclusive": {
+      "@id": "movehome:rent_all_inclusive",
+      "@type": "xsd:boolean"
+    },
+    "published": {
+      "@id": "movehome:published",
+      "@type": "xsd:boolean"
+    },
+    "condition": {
+      "@id": "movehome:condition",
+      "@type": "xsd:string"
+    },
+    "primary_classification": {
+      "@id": "movehome:primary_classification",
+      "@type": "@id"
+    },
+    "secondary_classifications": {
+      "@id": "movehome:secondary_classifications",
+      "@container": "@list"
+    },
+    "media": {
+      "@id": "movehome:media",
+      "@type": "@id"
+    },
+    "order": {
+      "@id": "movehome:order",
+      "@type": "xsd:integer"
+    },
+    "key_features": {
+      "@id": "movehome:key_features",
+      "@container": "@list"
+    },
+    "ListingRemovalRequest": "movehome:ListingRemovalRequest",
+    "removal_reason": {
+      "@id": "movehome:removal_reason",
+      "@type": "@id"
+    },
+    "removed_at": {
+      "@id": "movehome:removed_at",
+      "@type": "xsd:dateTime"
+    },
+    "note": {
+      "@id": "movehome:note",
+      "@type": "xsd:string"
+    },
+    "RemovalReason": "movehome:RemovalReason",
+    "Listing": "movehome:Listing",
+    "residential": {
+      "@id": "movehome:residential",
+      "@type": "@id"
+    },
+    "commercial": {
+      "@id": "movehome:commercial",
+      "@type": "@id"
+    },
+    "created_at": {
+      "@id": "movehome:created_at",
+      "@type": "xsd:dateTime"
+    },
+    "TenureType": "movehome:TenureType",
+    "Address": "movehome:Address",
+    "display_address": {
+      "@id": "movehome:display_address",
+      "@type": "xsd:string"
+    },
+    "building_identifier": {
+      "@id": "movehome:building_identifier",
+      "@type": "xsd:string"
+    },
+    "address_line_1": {
+      "@id": "movehome:address_line_1",
+      "@type": "xsd:string"
+    },
+    "address_line_2": {
+      "@id": "movehome:address_line_2",
+      "@type": "xsd:string"
+    },
+    "district": {
+      "@id": "movehome:district",
+      "@type": "xsd:string"
+    },
+    "town": {
+      "@id": "movehome:town",
+      "@type": "xsd:string"
+    },
+    "county": {
+      "@id": "movehome:county",
+      "@type": "xsd:string"
+    },
+    "postcode": {
+      "@id": "movehome:postcode",
+      "@type": "xsd:string"
+    },
+    "country": {
+      "@id": "movehome:country",
+      "@type": "xsd:string"
+    },
+    "latitude": {
+      "@id": "movehome:latitude",
+      "@type": "xsd:decimal"
+    },
+    "longitude": {
+      "@id": "movehome:longitude",
+      "@type": "xsd:decimal"
+    },
+    "uprn": {
+      "@id": "movehome:uprn",
+      "@type": "xsd:integer"
+    },
+    "show_map": {
+      "@id": "movehome:show_map",
+      "@type": "xsd:boolean"
+    },
+    "MediaAsset": "movehome:MediaAsset",
+    "url": {
+      "@id": "movehome:url",
+      "@type": "@id"
+    },
+    "etag": {
+      "@id": "movehome:etag",
+      "@type": "xsd:string"
+    },
+    "CommercialClassification": "movehome:CommercialClassification",
+    "PropertyClassification": "movehome:PropertyClassification",
+    "classification": {
+      "@id": "movehome:classification",
+      "@type": "@id"
+    },
+    "sub_type": {
+      "@id": "movehome:sub_type",
+      "@type": "@id"
+    },
+    "AsyncAccepted": "movehome:AsyncAccepted",
+    "request_id": {
+      "@id": "movehome:request_id",
+      "@type": "xsd:string"
+    },
+    "polling_url": {
+      "@id": "movehome:polling_url",
+      "@type": "@id"
+    },
+    "CommercialBuilding": "movehome:CommercialBuilding",
+    "address": {
+      "@id": "movehome:address",
+      "@type": "@id"
+    },
+    "amenities": {
+      "@id": "movehome:amenities",
+      "@container": "@list"
+    },
+    "auction": {
+      "@id": "movehome:auction",
+      "@type": "xsd:boolean"
+    },
+    "spaces": {
+      "@id": "movehome:spaces",
+      "@container": "@list"
+    },
+    "PublicCardProjection": "movehome:PublicCardProjection",
+    "raia_id": {
+      "@id": "movehome:raia_id",
+      "@type": "xsd:string"
+    },
+    "publish": {
+      "@id": "movehome:publish",
+      "@type": "xsd:boolean"
+    },
+    "max_data_level": {
+      "@id": "movehome:max_data_level",
+      "@type": "xsd:integer"
+    },
+    "suppress_address": {
+      "@id": "movehome:suppress_address",
+      "@type": "xsd:boolean"
+    },
+    "Sizing": "movehome:Sizing",
+    "size": {
+      "@id": "movehome:size",
+      "@type": "xsd:decimal"
+    },
+    "min_size": {
+      "@id": "movehome:min_size",
+      "@type": "xsd:decimal"
+    },
+    "max_size": {
+      "@id": "movehome:max_size",
+      "@type": "xsd:decimal"
+    },
+    "unit": {
+      "@id": "movehome:unit",
+      "@type": "@id"
+    },
+    "measurement_type": {
+      "@id": "movehome:measurement_type",
+      "@type": "@id"
+    },
+    "Pricing": "movehome:Pricing",
+    "price": {
+      "@id": "movehome:price",
+      "@type": "xsd:decimal"
+    },
+    "currency": {
+      "@id": "movehome:currency",
+      "@type": "@id"
+    },
+    "display_qualifier": {
+      "@id": "movehome:display_qualifier",
+      "@type": "xsd:string"
+    },
+    "frequency": {
+      "@id": "movehome:frequency",
+      "@type": "@id"
+    },
+    "rent_obligation": {
+      "@id": "movehome:rent_obligation",
+      "@type": "xsd:string"
+    },
+    "ListingSaveAction": "movehome:ListingSaveAction",
+    "action": {
+      "@id": "movehome:action",
+      "@type": "xsd:string"
+    },
+    "RentFrequency": "movehome:RentFrequency",
+    "PropertyType": "movehome:PropertyType",
+    "CommercialListingInput": "movehome:CommercialListingInput",
+    "building": {
+      "@id": "movehome:building",
+      "@type": "@id"
+    },
+    "public_card": {
+      "@id": "movehome:public_card",
+      "@type": "@id"
+    },
+    "ResidentialListingInput": "movehome:ResidentialListingInput",
+    "property_type": {
+      "@id": "movehome:property_type",
+      "@type": "@id"
+    },
+    "headline": {
+      "@id": "movehome:headline",
+      "@type": "xsd:string"
+    },
+    "bedrooms": {
+      "@id": "movehome:bedrooms",
+      "@type": "xsd:integer"
+    },
+    "bathrooms": {
+      "@id": "movehome:bathrooms",
+      "@type": "xsd:integer"
+    },
+    "reception_rooms": {
+      "@id": "movehome:reception_rooms",
+      "@type": "xsd:integer"
+    },
+    "floor_area_sqm": {
+      "@id": "movehome:floor_area_sqm",
+      "@type": "xsd:decimal"
+    },
+    "available_from": {
+      "@id": "movehome:available_from",
+      "@type": "xsd:date"
+    },
+    "asking_price": {
+      "@id": "movehome:asking_price",
+      "@type": "xsd:decimal"
+    },
+    "asking_rent_pcm": {
+      "@id": "movehome:asking_rent_pcm",
+      "@type": "xsd:decimal"
+    },
+    "rent_frequency": {
+      "@id": "movehome:rent_frequency",
+      "@type": "@id"
+    },
+    "deposit": {
+      "@id": "movehome:deposit",
+      "@type": "xsd:decimal"
+    },
+    "tenure": {
+      "@id": "movehome:tenure",
+      "@type": "@id"
+    },
+    "furnishing": {
+      "@id": "movehome:furnishing",
+      "@type": "@id"
+    },
+    "epc_rating": {
+      "@id": "movehome:epc_rating",
+      "@type": "xsd:string"
+    },
+    "features": {
+      "@id": "movehome:features",
+      "@container": "@list"
+    },
+    "parking": {
+      "@id": "movehome:parking",
+      "@container": "@list"
+    },
+    "outside_space": {
+      "@id": "movehome:outside_space",
+      "@container": "@list"
+    },
+    "ListingRemovalResult": "movehome:ListingRemovalResult",
+    "MeasurementType": "movehome:MeasurementType",
+    "AreaSizeUnit": "movehome:AreaSizeUnit",
+    "HealthStatus": "movehome:HealthStatus",
+    "checked_at": {
+      "@id": "movehome:checked_at",
+      "@type": "xsd:dateTime"
+    },
+    "ProductActivationStatus": "movehome:ProductActivationStatus",
+    "ProductActivationsPage": "movehome:ProductActivationsPage",
+    "activations": {
+      "@id": "movehome:activations",
+      "@container": "@list"
+    },
+    "FeaturedPropertyActivationRequest": "movehome:FeaturedPropertyActivationRequest",
+    "listing_id": {
+      "@id": "movehome:listing_id",
+      "@type": "xsd:integer"
+    },
+    "customer_listing_id": {
+      "@id": "movehome:customer_listing_id",
+      "@type": "xsd:string"
+    },
+    "PremiumListingActivationRequest": "movehome:PremiumListingActivationRequest",
+    "highlights": {
+      "@id": "movehome:highlights",
+      "@container": "@list"
+    },
+    "ProductActivation": "movehome:ProductActivation",
+    "id": {
+      "@id": "movehome:id",
+      "@type": "xsd:string"
+    },
+    "product": {
+      "@id": "movehome:product",
+      "@type": "xsd:string"
+    },
+    "starts_at": {
+      "@id": "movehome:starts_at",
+      "@type": "xsd:dateTime"
+    },
+    "ends_at": {
+      "@id": "movehome:ends_at",
+      "@type": "xsd:dateTime"
+    },
+    "cancellation_reason": {
+      "@id": "movehome:cancellation_reason",
+      "@type": "xsd:string"
+    },
+    "PremiumListingHighlight": "movehome:PremiumListingHighlight"
+  },
+  "@type": "schema:Dataset",
+  "schema:name": "Move Home Organisation CIC API JSON-LD context",
+  "schema:description": "A JSON-LD @context for the objects Move Home Organisation CIC's own API contract declares: one class per component schema, one property per declared field, typed from the contract. Derived by script (derive-json-ld.py, 2026-10-20) from openapi/movehome-org-branches-api-openapi.yml, openapi/movehome-org-listings-api-openapi.yml, openapi/movehome-org-operational-api-openapi.yml.",
+  "dcterms:created": "2026-10-20",
+  "dcterms:source": [
+    "openapi/movehome-org-branches-api-openapi.yml",
+    "openapi/movehome-org-listings-api-openapi.yml",
+    "openapi/movehome-org-operational-api-openapi.yml",
+    "openapi/movehome-org-products-api-openapi.yml"
+  ]
+}

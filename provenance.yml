@@ -123,7 +123,7 @@ artifacts:
   skills/movehome-org-search-and-enquire.md:
     method: generated
     evidence: declared in the artifact
-  skills/movehome-org-skills.md:
+  llms/movehome-org-skills.md:
     method: unknown
     evidence: no authorship recorded
   skills/movehome-org-syndicate-listings.md:

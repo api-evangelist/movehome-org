@@ -9,7 +9,37 @@ info:
 
     integrations (Rightmove Real-Time Data Feed, Rightmove Commercial Listings,
 
-    Zoopla Real-Time Listings, and Zoopla Products).'
+    Zoopla Real-Time Listings, and Zoopla Products).
+
+
+    Implementers expose this API in front of their CRM, MLS or listing
+
+    aggregator. Buyer agents, portals, and partner systems consume it to:
+
+
+    - Upload, update, retrieve and remove residential and commercial listings.
+
+    - Reconcile a branch''s live inventory against their own source of truth.
+
+    - Pull branch performance metrics and enquiries (leads).
+
+    - Request and inspect portal product activations such as Premium Listings
+
+    and Featured Properties.
+
+
+    The contract intentionally uses RAIA naming conventions
+
+    (`snake_case` fields, `SCREAMING_SNAKE_CASE` enum values, `raia_id`
+
+    identifiers) and shares the public listing projection with
+
+    `schemas/property.json`.
+
+
+    Specification is published under the MIT license. See the developer guide
+
+    at `docs/raia-portal-feed-api.md`.'
   contact:
     name: RAIA Protocol Working Group
     email: protocol@estateaigents.org
@@ -213,69 +243,48 @@ paths:
           $ref: '#/components/responses/ServerError'
 components:
   schemas:
-    BranchEnquiriesPage:
+    ProblemDetail:
+      description: RFC 7807 problem detail. Implementations may add vendor-specific extension members.
       type: object
-      required:
-      - enquiries
       properties:
-        enquiries:
+        type:
+          type: string
+          format: uri
+          default: about:blank
+        title:
+          type: string
+        status:
+          type: integer
+          minimum: 100
+          maximum: 599
+        detail:
+          type: string
+        instance:
+          type: string
+          format: uri
+        trace_id:
+          type: string
+        timestamp:
+          type: string
+          format: date-time
+        validation_errors:
           type: array
           items:
-            $ref: '#/components/schemas/BranchEnquiry'
-        next_cursor:
-          type: string
-          description: 'Opaque cursor to pass back as `since_enquiry_id` on the next poll.
-
-            Absent when there are no more enquiries.
-
-            '
-    PaginationMeta:
-      type: object
-      required:
-      - page
-      - per_page
-      - total
-      properties:
-        page:
-          type: integer
-          minimum: 1
-        per_page:
-          type: integer
-          minimum: 1
-          maximum: 200
-        total:
-          type: integer
-          minimum: 0
-    PerformanceMetrics:
-      type: object
-      required:
-      - impressions
-      - detail_views
-      - enquiries
-      properties:
-        impressions:
-          type: integer
-          minimum: 0
-        detail_views:
-          type: integer
-          minimum: 0
-        click_throughs:
-          type: integer
-          minimum: 0
-        phone_reveals:
-          type: integer
-          minimum: 0
-        brochure_downloads:
-          type: integer
-          minimum: 0
-        enquiries:
-          type: integer
-          minimum: 0
-    TransactionType:
-      type: string
-      enum:
-      - SALES
-      - LETTINGS
+            type: object
+            required:
+            - field
+            - message
+            properties:
+              field:
+                type: string
+                examples:
+                - building.location.postcode
+              message:
+                type: string
+              code:
+                type: string
+                examples:
+                - MISSING
     BranchEnquiry:
       type: object
       required:
@@ -381,6 +390,48 @@ components:
           format: date-time
         version:
           type: integer
+    PaginationMeta:
+      type: object
+      required:
+      - page
+      - per_page
+      - total
+      properties:
+        page:
+          type: integer
+          minimum: 1
+        per_page:
+          type: integer
+          minimum: 1
+          maximum: 200
+        total:
+          type: integer
+          minimum: 0
+    PerformanceMetrics:
+      type: object
+      required:
+      - impressions
+      - detail_views
+      - enquiries
+      properties:
+        impressions:
+          type: integer
+          minimum: 0
+        detail_views:
+          type: integer
+          minimum: 0
+        click_throughs:
+          type: integer
+          minimum: 0
+        phone_reveals:
+          type: integer
+          minimum: 0
+        brochure_downloads:
+          type: integer
+          minimum: 0
+        enquiries:
+          type: integer
+          minimum: 0
     BranchPerformanceReport:
       type: object
       required:
@@ -434,6 +485,11 @@ components:
                 type: string
               metrics:
                 $ref: '#/components/schemas/PerformanceMetrics'
+    TransactionType:
+      type: string
+      enum:
+      - SALES
+      - LETTINGS
     BranchListingsPage:
       type: object
       required:
@@ -446,6 +502,22 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/BranchListingSummary'
+    BranchEnquiriesPage:
+      type: object
+      required:
+      - enquiries
+      properties:
+        enquiries:
+          type: array
+          items:
+            $ref: '#/components/schemas/BranchEnquiry'
+        next_cursor:
+          type: string
+          description: 'Opaque cursor to pass back as `since_enquiry_id` on the next poll.
+
+            Absent when there are no more enquiries.
+
+            '
     ListingStatus:
       type: string
       description: Marketing lifecycle status. Mirrors the public RAIA property card statuses plus the commercial-only `UNDER_OFFER`.
@@ -458,69 +530,21 @@ components:
       - LET_AGREED
       - OFF_MARKET
       - WITHDRAWN
-    ProblemDetail:
-      description: RFC 7807 problem detail. Implementations may add vendor-specific extension members.
-      type: object
-      properties:
-        type:
-          type: string
-          format: uri
-          default: about:blank
-        title:
-          type: string
-        status:
-          type: integer
-          minimum: 100
-          maximum: 599
-        detail:
-          type: string
-        instance:
-          type: string
-          format: uri
-        trace_id:
-          type: string
-        timestamp:
-          type: string
-          format: date-time
-        validation_errors:
-          type: array
-          items:
-            type: object
-            required:
-            - field
-            - message
-            properties:
-              field:
-                type: string
-                examples:
-                - building.location.postcode
-              message:
-                type: string
-              code:
-                type: string
-                examples:
-                - MISSING
+  parameters:
+    BranchId:
+      name: branch_id
+      in: path
+      required: true
+      description: Stable identifier of the branch (office) on the feed.
+      schema:
+        oneOf:
+        - type: integer
+          format: int64
+        - type: string
+          pattern: ^[A-Za-z0-9_-]{1,64}$
   responses:
     Unauthorized:
       description: Missing or invalid bearer token.
-      content:
-        application/problem+json:
-          schema:
-            $ref: '#/components/schemas/ProblemDetail'
-    BadRequest:
-      description: Validation error. The body is a `ProblemDetail`.
-      content:
-        application/problem+json:
-          schema:
-            $ref: '#/components/schemas/ProblemDetail'
-    Forbidden:
-      description: Token is valid but lacks the required scope.
-      content:
-        application/problem+json:
-          schema:
-            $ref: '#/components/schemas/ProblemDetail'
-    ServerError:
-      description: Unexpected error.
       content:
         application/problem+json:
           schema:
@@ -546,24 +570,30 @@ components:
         application/problem+json:
           schema:
             $ref: '#/components/schemas/ProblemDetail'
+    Forbidden:
+      description: Token is valid but lacks the required scope.
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/ProblemDetail'
+    BadRequest:
+      description: Validation error. The body is a `ProblemDetail`.
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/ProblemDetail'
     NotFound:
       description: Resource not found.
       content:
         application/problem+json:
           schema:
             $ref: '#/components/schemas/ProblemDetail'
-  parameters:
-    BranchId:
-      name: branch_id
-      in: path
-      required: true
-      description: Stable identifier of the branch (office) on the feed.
-      schema:
-        oneOf:
-        - type: integer
-          format: int64
-        - type: string
-          pattern: ^[A-Za-z0-9_-]{1,64}$
+    ServerError:
+      description: Unexpected error.
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/ProblemDetail'
   securitySchemes:
     OAuth2ClientCredentials:
       type: oauth2

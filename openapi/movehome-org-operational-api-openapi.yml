@@ -9,7 +9,37 @@ info:
 
     integrations (Rightmove Real-Time Data Feed, Rightmove Commercial Listings,
 
-    Zoopla Real-Time Listings, and Zoopla Products).'
+    Zoopla Real-Time Listings, and Zoopla Products).
+
+
+    Implementers expose this API in front of their CRM, MLS or listing
+
+    aggregator. Buyer agents, portals, and partner systems consume it to:
+
+
+    - Upload, update, retrieve and remove residential and commercial listings.
+
+    - Reconcile a branch''s live inventory against their own source of truth.
+
+    - Pull branch performance metrics and enquiries (leads).
+
+    - Request and inspect portal product activations such as Premium Listings
+
+    and Featured Properties.
+
+
+    The contract intentionally uses RAIA naming conventions
+
+    (`snake_case` fields, `SCREAMING_SNAKE_CASE` enum values, `raia_id`
+
+    identifiers) and shares the public listing projection with
+
+    `schemas/property.json`.
+
+
+    Specification is published under the MIT license. See the developer guide
+
+    at `docs/raia-portal-feed-api.md`.'
   contact:
     name: RAIA Protocol Working Group
     email: protocol@estateaigents.org

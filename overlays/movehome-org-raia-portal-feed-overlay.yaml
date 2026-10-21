@@ -15,7 +15,7 @@ info:
   x-generated: '2026-09-19'
   x-method: generated
   x-source: https://github.com/MoveHome/MoveHome.Org/blob/main/docs/raia-portal-feed-api.md
-extends: ../openapi/movehome-org-raia-portal-feed-openapi.yaml
+extends: ../openapi/_original/movehome-org-raia-portal-feed-openapi.yaml
 actions:
 - target: $.servers
   description: Replace the standard's implementer-hosted placeholders with MoveHome's live base URL (docs §1 "API base https://movehome.org/api/raia/portal/v1"; the docs say to "Use a staging host for testing" but name none).

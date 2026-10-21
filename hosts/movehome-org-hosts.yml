@@ -1,0 +1,57 @@
+generated: '2026-10-20'
+method: derived
+source: the pre-flight dossier, apis.yml pointers, spec servers, well-known, vendors -- nothing fetched here
+generator: derive-hosts.py
+summary:
+  hosts: 3
+  own: 2
+  other_domain: 0
+  platform: 1
+  roles:
+  - api
+  - docs
+  - website
+hosts:
+- host: api.movehome.org
+  found_by:
+  - contract-discovery
+  types: []
+  serves: []
+  registrable_domain: movehome.org
+  role: api
+  relation: own
+- host: github.com
+  found_by:
+  - pointer
+  types:
+  - APIReference
+  - GitHubOrganization
+  - SourceCode
+  - Support
+  - License
+  serves: []
+  registrable_domain: github.com
+  role: docs
+  relation: platform
+- host: movehome.org
+  found_by:
+  - pointer
+  - apis[]
+  - probed
+  - docs-index
+  - contract-discovery
+  - well-known
+  - vendor-detect
+  types:
+  - Website
+  - Documentation
+  - GettingStarted
+  - About
+  serves:
+  - api
+  - docs
+  - hosting
+  vendor: vercel
+  registrable_domain: movehome.org
+  role: website
+  relation: own

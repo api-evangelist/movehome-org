@@ -1,3 +1,21 @@
+generated: '2026-10-20'
+method: searched
+source:
+- https://a2aregistry.org/api/agents
+- https://zapier.com/apps/movehome-org/integrations
+- https://zapier.com/apps/move-home-organisation-cic/integrations
+- https://n8n.io/integrations/movehome-org/
+- https://composio.dev/toolkits/movehome-org
+- https://monid.ai/tools/movehome-org
+checked:
+- https://a2aregistry.org/api/agents
+- https://composio.dev/toolkits/movehome-org
+- https://monid.ai/tools/movehome-org
+- https://n8n.io/integrations/movehome-org/
+- https://zapier.com/apps/move-home-organisation-cic/integrations
+- https://zapier.com/apps/movehome-org/integrations
+summary: null
+marketplace_apps: []
 edges:
 - partner_name: A2A protocol (own Agent Card)
   partner: null
@@ -28,7 +46,7 @@ edges:
     matched_domain: movehome.org
     matched_by: own-domain
     detected_by: sweep-ai-agents.py
-    detected: '2026-10-15'
+    detected: '2026-10-19'
   detected_by: sweep-ai-agents.py
   first_seen: '2026-10-15'
 - partner_name: a2aregistry.org
@@ -64,12 +82,7 @@ edges:
     sample_agents:
     - MoveHome.org Property Agent
     detected_by: sweep-ai-agents.py
-    detected: '2026-10-15'
+    detected: '2026-10-19'
   detected_by: sweep-ai-agents.py
   first_seen: '2026-10-15'
-generated: '2026-10-15'
-method: searched
-source:
-- https://a2aregistry.org/api/agents
-checked:
-- https://a2aregistry.org/api/agents
+templates: []

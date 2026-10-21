@@ -5,7 +5,7 @@ api: a2a/movehome-org-agent-card.json
 surfaces:
   - https://movehome.org/api/a2a (A2A 0.3.0, JSON-RPC 2.0)
   - https://movehome.org/mcp (MCP 2025-06-18, read-only)
-operations:
+a2a_skills:  # A2A skill ids from the agent card, not OpenAPI operationIds
   - search_properties
   - get_property
   - create_enquiry
