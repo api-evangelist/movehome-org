@@ -33,6 +33,18 @@ artifacts:
   front-door-ai/2026-09-17.yml:
     method: unknown
     evidence: no authorship recorded
+  hosts/movehome-org-hosts.yml:
+    method: derived
+    evidence: declared in the artifact
+  integrations/_index.yml:
+    method: generated
+    evidence: carries an API Evangelist house phrase
+  integrations/movehome-org-integration-edges.yml:
+    method: searched
+    evidence: declared in the artifact
+  json-ld/movehome-org-context.jsonld:
+    method: unknown
+    evidence: no authorship recorded
   json-schema/movehome-org-raia-agent-card.json:
     method: unknown
     evidence: no authorship recorded
@@ -42,7 +54,7 @@ artifacts:
   json-schema/movehome-org-raia-listing.json:
     method: unknown
     evidence: no authorship recorded
-  kin/checks-2026-09-24T161608.yml:
+  kin/checks-2026-10-11T110117.yml:
     method: generated
     evidence: Kin Score snapshot written by score.rb
   kin/score-2026-09-19T193153.yml:
@@ -75,10 +87,31 @@ artifacts:
   kin/score-2026-09-24T161608.yml:
     method: generated
     evidence: Kin Score snapshot written by score.rb
+  kin/score-2026-09-25T210408.yml:
+    method: generated
+    evidence: Kin Score snapshot written by score.rb
+  kin/score-2026-09-25T232841.yml:
+    method: generated
+    evidence: Kin Score snapshot written by score.rb
+  kin/score-2026-10-03T000835.yml:
+    method: generated
+    evidence: Kin Score snapshot written by score.rb
+  kin/score-2026-10-03T024842.yml:
+    method: generated
+    evidence: Kin Score snapshot written by score.rb
+  kin/score-2026-10-11T110117.yml:
+    method: generated
+    evidence: Kin Score snapshot written by score.rb
   lifecycle/movehome-org-lifecycle.yml:
     method: searched
     evidence: declared in the artifact
+  llms/movehome-org-llms-provenance.yml:
+    method: searched
+    evidence: 'derive-llms-provenance.py: harvested'
   llms/movehome-org-llms.txt:
+    method: searched
+    evidence: 'derive-llms-provenance.py: harvested'
+  llms/movehome-org-skills.md:
     method: searched
     evidence: 'derive-llms-provenance.py: harvested'
   mcp/movehome-org-mcp-tools.json:
@@ -93,15 +126,28 @@ artifacts:
   mcp/movehome-org-tool-crosswalk.yml:
     method: derived
     evidence: declared in the artifact
-  openapi/movehome-org-raia-portal-feed-openapi.yaml:
-    method: unknown
-    evidence: no authorship recorded
+  openapi/_original/movehome-org-raia-portal-feed-openapi.yaml:
+    method: harvested
+    evidence: found in openapi/_original/; the fetch URL and bytes were not recorded, so byte-identity
+      to the provider's source is unverified
+  openapi/movehome-org-branches-api-openapi.yml:
+    method: derived
+    evidence: paths are a subset of openapi/_original/ (split from the harvested spec)
+  openapi/movehome-org-listings-api-openapi.yml:
+    method: derived
+    evidence: paths are a subset of openapi/_original/ (split from the harvested spec)
+  openapi/movehome-org-operational-api-openapi.yml:
+    method: derived
+    evidence: paths are a subset of openapi/_original/ (split from the harvested spec)
+  openapi/movehome-org-products-api-openapi.yml:
+    method: derived
+    evidence: paths are a subset of openapi/_original/ (split from the harvested spec)
   overlays/movehome-org-raia-portal-feed-overlay.yaml:
     method: generated
     evidence: declared in the artifact
   packages/movehome-org-packages.yml:
-    method: searched
-    evidence: declared in the artifact
+    method: unknown
+    evidence: no authorship recorded
   plans/movehome-org-plans-pricing.yml:
     method: searched
     evidence: declared in the artifact
@@ -110,6 +156,9 @@ artifacts:
     evidence: no authorship recorded
   regulatory/movehome-org-regulatory-posture.yml:
     method: searched
+    evidence: declared in the artifact
+  rules/movehome-org-rules.yml:
+    method: generated
     evidence: declared in the artifact
   scopes/movehome-org-scopes.yml:
     method: searched
@@ -123,11 +172,14 @@ artifacts:
   skills/movehome-org-search-and-enquire.md:
     method: generated
     evidence: declared in the artifact
-  llms/movehome-org-skills.md:
-    method: unknown
-    evidence: no authorship recorded
   skills/movehome-org-syndicate-listings.md:
     method: generated
+    evidence: declared in the artifact
+  vendors/movehome-org-vendors.yml:
+    method: unknown
+    evidence: no authorship recorded
+  vocabulary/movehome-org-vocabulary.yml:
+    method: derived
     evidence: declared in the artifact
   well-known/movehome-org-jwks.json:
     method: unknown
