@@ -64,10 +64,160 @@
 > Full detail: **[Where this data comes from](https://apievangelist.com/about/where-our-data-comes-from)**
 <!-- API-EVANGELIST-PROVENANCE:END -->
 
-Move Home Organisation CIC (Companies House 17202438) is a UK Community Interest Company that runs [MoveHome.org](https://movehome.org/), a free, not-for-profit property listing aggregator and the open-source reference consumer of the RAIA Protocol. Its machine surface is agent-native and anonymous: an A2A 0.3.0 agent card (graded conformant) with search, detail and enquiry skills at `https://movehome.org/api/a2a`, a read-only MCP server at `https://movehome.org/mcp`, a second MCP server and REST API over its public registry of real-estate A2A agents, and an OAuth2-gated implementation of the RAIA Portal Feed API (OpenAPI 3.1.0) for CRMs pushing listings in.
+Move Home Organisation CIC (Companies House 17202438, incorporated 6 May 2026, Poole, England) is an asset-locked UK Community Interest Company that runs MoveHome.org, a free, not-for-profit property listing aggregator built as the open-source reference consumer of the RAIA Protocol — the Real Estate AI Agent standard whose charter names the same CIC as its governing body — with listings federated from estate agencies and the transaction side handled by the separate commercial company EstateAigents.com Ltd. Its machine surface is agent-native and anonymous: an A2A 0.3.0 agent card at /.well-known/agent-card.json (graded conformant) with search_properties, get_property and create_enquiry skills over JSON-RPC at https://movehome.org/api/a2a; a read-only MCP server at https://movehome.org/mcp and a second MCP server over its public registry of real-estate A2A agents; an unauthenticated registry REST API under /api/registry/v1; and, for CRMs pushing listings in, an OAuth2 client-credentials implementation of the RAIA Portal Feed API (OpenAPI 3.1.0, 13 operations, RFC 9457 problem details) at https://movehome.org/api/raia/portal/v1. The site publishes an llms.txt/skills.md for agents but no privacy policy, terms, status page, changelog, SDK or pricing page.
 
-- Website: https://movehome.org/
-- Agent guide (llms.txt / skills.md): https://movehome.org/skills.md
-- Agent card: https://movehome.org/.well-known/agent-card.json
-- Source: https://github.com/MoveHome/MoveHome.Org
-- Profile index: [apis.yml](apis.yml)
+**Areas:** Real Estate · Property · Lettings · Property Sales · Agents · A2A · MCP · Agent-Native · Agent Registry · Non-Profit · Open Source · RAIA Protocol
+
+## Move Home Organisation CIC on APIs.io
+
+Everything profiled for Move Home Organisation CIC is published on APIs.io rather than in this repository. Start at the provider page — **[apis.io/providers/movehome-org/](https://apis.io/providers/movehome-org/)** — or go straight to one of the APIs or properties below.
+
+### APIs (7)
+
+- [MoveHome.org A2A Property Agent](https://apis.io/apis/movehome-org/movehome-a2a-property-agent/) — Agent2Agent (A2A 0.3.0) surface: an agent card served from https://movehome.org/.well-known/agent-card.json (and the legacy /.well-known/agent.json,…
+- [MoveHome.org Property MCP Server](https://apis.io/apis/movehome-org/movehome-property-mcp-server/) — Remote Model Context Protocol server at https://movehome.org/mcp (alias /api/mcp): stateless Streamable HTTP, protocol version 2025-06-18, serverInfo…
+- [MoveHome.org A2A Agent Registry API](https://apis.io/apis/movehome-org/movehome-a2a-registry-api/) — Public registry of real-estate A2A agents operated by MoveHome, exposed two ways. REST under https://movehome.org/api/registry/v1 (no OpenAPI published;…
+- [Move Home Organisation CIC Branches API](https://apis.io/apis/movehome-org/movehome-org-branches-api/) — Per-branch reconciliation, performance reporting and enquiry retrieval.
+- [Move Home Organisation CIC Listings API](https://apis.io/apis/movehome-org/movehome-org-listings-api/) — Upload, update, retrieve and remove residential or commercial listings.
+- [Move Home Organisation CIC Operational API](https://apis.io/apis/movehome-org/movehome-org-operational-api/) — Health and metadata.
+- [Move Home Organisation CIC Products API](https://apis.io/apis/movehome-org/movehome-org-products-api/) — Portal product activations such as Premium Listings and Featured Properties.
+
+### Published properties
+
+Each property below is a page on APIs.io carrying the machine-readable artifact and what it says.
+
+#### AsyncAPI (1)
+
+Event-driven and webhook contracts.
+
+- [Movehome Org Webhooks](https://apis.io/asyncapis/movehome-org/movehome-org-webhooks/)
+
+#### MCP servers (2)
+
+Model Context Protocol servers that expose the API to agents.
+
+- [MoveHome A2A Registry MCP endpoint (Streamable HTTP)](https://apis.io/servers/movehome-org/movehome-a2a-registry-mcp-endpoint-streamable-http/)
+- [movehome-org-mcp.yml](https://apis.io/servers/movehome-org/movehome-org-mcp-yml/)
+
+#### Agentic access (1)
+
+Which operations an agent can call, which act, and which need a human in the loop.
+
+- [Movehome Org Agentic Access](https://apis.io/agentic-access/movehome-org/movehome-org-agentic-access/)
+
+#### JSON Schema (3)
+
+The data models the API reads and writes.
+
+- [RAIA Agent Card](https://apis.io/schemas/movehome-org/movehome-org-raia-agent-card/)
+- [RAIA Enquiry](https://apis.io/schemas/movehome-org/movehome-org-raia-enquiry/)
+- [RAIA Property Listing](https://apis.io/schemas/movehome-org/movehome-org-raia-listing/)
+
+#### JSON-LD (1)
+
+Linked-data contexts for the provider's vocabulary.
+
+- [Movehome Org Context](https://apis.io/jsonld/movehome-org/movehome-org-context/)
+
+#### Overlays (1)
+
+OpenAPI overlays, including conversational phrasing for each operation.
+
+- [Movehome Org Raia Portal Feed Overlay](https://apis.io/overlays/movehome-org/movehome-org-raia-portal-feed-overlay/)
+
+#### Governance rules (1)
+
+Spectral rulesets for the provider's contracts.
+
+- [Move Home Organisation CIC API Rules](https://apis.io/rules/movehome-org/movehome-org-rules/)
+
+#### Security (2)
+
+Authentication, trust centre, and vulnerability disclosure.
+
+- [Movehome Org Authentication](https://apis.io/security/movehome-org/movehome-org-authentication/)
+- [Movehome Org Domain Security](https://apis.io/security/movehome-org/movehome-org-domain-security/)
+
+#### OAuth scopes (1)
+
+The permissions the API asks for.
+
+- [Movehome Org Scopes](https://apis.io/scopes/movehome-org/movehome-org-scopes/)
+
+#### Plans and pricing (1)
+
+Published plans, tiers and prices.
+
+- [Movehome Org Plans Pricing](https://apis.io/plans/movehome-org/movehome-org-plans-pricing/)
+
+#### Rate limits (1)
+
+Published request limits.
+
+- [Movehome Org Rate Limits](https://apis.io/rate-limits/movehome-org/movehome-org-rate-limits/)
+
+## Where to find this API
+
+Links to the company's own pages. This repository publishes no copy of their specifications — the canonical document is theirs and lives at the URLs below.
+
+- [Website](https://movehome.org/)
+- [Documentation](https://movehome.org/skills.md)
+- [Getting started](https://movehome.org/skills.md)
+- [API reference](https://github.com/MoveHome/MoveHome.Org/tree/main/docs)
+- [Support](https://github.com/MoveHome/MoveHome.Org/issues)
+- [GitHub](https://github.com/MoveHome)
+
+## API Evangelist rating
+
+**Kin Score 54.1** — developing · rubric 0.25.0 · scored 2026-10-23
+
+| Facet | Score |
+|---|---|
+| Discoverability | 75.0 |
+| Contract quality | 66.6 |
+| Contract governance | 35.6 |
+| Operational transparency | 44.7 |
+| Developer ergonomics | 61.9 |
+| Access clarity | 21.1 |
+
+**Agent readiness 52.3** — agent-ready (gated down from agent-native)
+
+| Agent-readiness dimension | Result |
+|---|---|
+| Spec Presence | yes |
+| Agentic Access | derived (partial credit) |
+| Reversibility Documented | — |
+| MCP Server | documented (partial credit) |
+| Auth Clarity | negotiable (partial credit) |
+| Idempotency | documented (partial credit) |
+| Error Semantics | derived (partial credit) |
+| OpenAPI Examples | verified |
+| Rate Limit Signal | verified |
+| Event Surface Described | yes |
+| Agent Skills | yes |
+| Well Known Catalog | — |
+| Consent Identity | — |
+| Agent Card | conformant |
+| Dry Run Mode | — |
+| Delegated Identity | — |
+| Protected Resource Metadata | — |
+| Dynamic Client Registration | — |
+| Agentic Commerce | — |
+| Pagination Ratio | na |
+| Operation Distinctiveness | distinct |
+
+**Regulatory alignment 26.5** — Horizontal (data, software, accessibility, platform)
+
+The rubric is published at [github.com/api-evangelist/kin-score](https://github.com/api-evangelist/kin-score). The per-check breakdown behind these numbers — which checks were earned, partial or missed — along with score history and how this provider compares to its peers, is available at [apis.io/providers/movehome-org/](https://apis.io/providers/movehome-org/).
+
+## How this profile is made
+
+API Evangelist profiles a company's public API surface the way a developer would find it: the website, developer portal and documentation, the specifications it publishes, its public repositories, and its pricing, status and changelog pages. From that it derives the properties above — contracts split per API, workflows, schemas, collections, governance rules, plans and rate limits — and scores them against the published [Kin Score rubric](https://github.com/api-evangelist/kin-score).
+
+The artifacts are published on [APIs.io](https://apis.io), not in this repository. This repository is the public record for Move Home Organisation CIC: the place to say something is wrong, missing or out of date, and to ask for a re-score or a removal.
+
+## Open an issue
+
+- **Something about this listing** — a wrong description, a missing API, a stale artifact or a question about the rating: [open an issue on this repository](https://github.com/api-evangelist/movehome-org/issues/new).
+- **A new API, or one that is not in the catalog yet** — [submit it on APIs.io](https://apis.io/add/).
+- **Anything else** — [the APIs.io inbox](https://github.com/api-search/inbox/issues/new) or [info@apievangelist.com](mailto:info@apievangelist.com).
